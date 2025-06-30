@@ -9,7 +9,13 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
+
+
+// 🔧 Ajout de la propriété `ignores`
 const eslintConfig = [
+  {
+    ignores: ["app/generated/**"], // ← Ignore ce dossier (tu peux adapter le chemin)
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 
