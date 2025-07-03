@@ -10,3 +10,17 @@ export async function getAllMessages() {
       },
     });
   }
+
+  export async function getBudgets() {
+    try {
+        const userBudget = await prisma.budget.findMany({
+
+        })
+
+        return userBudget
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération des budgets:', error);
+        throw error;
+    }
+}

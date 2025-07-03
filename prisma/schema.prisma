@@ -12,3 +12,45 @@ model test_connection {
   id      Int     @id @default(autoincrement())
   message String? @db.VarChar(255)
 }
+
+model budget {
+  id          String        @id
+  name        String
+  amount      Float
+  userId      String
+  emoji       String?
+  createdAt   DateTime      @default(now())
+  user        user          @relation(fields: [userId], references: [id], map: "Budget_userId_fkey")
+  transaction transaction[]
+
+  @@index([userId], map: "Budget_userId_fkey")
+}
+
+model transaction {
+  id          String           @id
+  description String
+  amount      Float
+  budgetId    String?
+  emoji       String?
+  createdAt   DateTime         @default(now())
+  type        transaction_type
+  userId      String
+  budget      budget?          @relation(fields: [budgetId], references: [id], map: "Transaction_budgetId_fkey")
+  user        user             @relation(fields: [userId], references: [id], map: "Transaction_userId_fkey")
+
+  @@index([budgetId], map: "Transaction_budgetId_fkey")
+  @@index([userId], map: "Transaction_userId_fkey")
+}
+
+model user {
+  id          String        @id
+  email       String        @unique(map: "User_email_key")
+  createdAt   DateTime      @default(now())
+  budget      budget[]
+  transaction transaction[]
+}
+
+enum transaction_type {
+  income
+  expense
+}
