@@ -101,8 +101,34 @@ export async function getBudgetsByUser(email="tlemcencrma20@gmail.com") {
 
     })
 
+
     const budget = user?.budget.find((b) => b.id === budgetId);
-    return budget
+
+    if (!budget) {
+      throw new Error("Budget non trouvé pour cet ID : " + budgetId);
+    }
+    
+    if (!budget.transaction || !Array.isArray(budget.transaction)) {
+      throw new Error("Transactions manquantes ou invalides.");
+    }
+    
+    if (!budget.name || typeof budget.name !== "string") {
+      throw new Error("Le nom du budget est invalide.");
+    }
+    
+    // Tout est ok, on peut trier les transactions
+    const sortedTransactions = budget.transaction.sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    
+    return {
+      ...budget,
+      transaction: sortedTransactions,
+    };
+    
+
+    /* const budget = user?.budget.find((b) => b.id === budgetId);
+    return budget */
   
     } catch (error) {
       console.error('Erreur lors de la récupération du budget:', error);
