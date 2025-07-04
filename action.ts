@@ -79,6 +79,7 @@ export async function getTransactionsByBudgetId(budgetId: string) {
           
           
       })
+      console.log("budget reçu :", budget)
       if (!budget) {
           throw new Error('Budget non trouvé.');
       }
