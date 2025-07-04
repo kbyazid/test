@@ -64,6 +64,7 @@ export async function getBudgetsByUser(email="tlemcencrma20@gmail.com") {
 //////////////////////////////////////////////////////////////////////////
 export async function getTransactionsByBudgetId(budgetId: string) {
   try {
+    console.log("ID budget reçu :", budgetId)
       const budget = await prisma.budget.findUnique({
           where: {
               id: budgetId
