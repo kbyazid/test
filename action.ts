@@ -87,23 +87,22 @@ export async function getBudgetsByUser(email="tlemcencrma20@gmail.com") {
 
   export async function getTransactionsByBudgetId(budgetId: string, email = "tlemcencrma20@gmail.com") {
     try {
-      const budget = await prisma.budget.findUnique({
+      const user = await prisma.user.findUnique({
         where: {
-            id: budgetId
+            email
         },
         include: {
-            transaction: {
-                orderBy: {
-                  createdAt: "desc", // Tri décroissant
-                },
-              },
-        },
-        
-        
+            budget: {
+                include: {
+                    transaction: true
+                }
+            }
+        }
+
     })
 
-  
-      return budget
+    const budget = user?.budget.find((b) => b.id === budgetId);
+    return budget
   
     } catch (error) {
       console.error('Erreur lors de la récupération du budget:', error);
