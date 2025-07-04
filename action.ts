@@ -64,20 +64,21 @@ export async function getBudgetsByUser(email="tlemcencrma20@gmail.com") {
 //////////////////////////////////////////////////////////////////////////
 export async function getTransactionsByBudgetId(budgetId: string) {
   try {
-      console.log("ID budget reçu :", budgetId)
-      const budget = await prisma.budget.findUnique({
-        where: { id: budgetId },
-        include: {
-          transaction: true, // Pas de tri ici
-        },
-      });
-      
-      console.log("budget reçu :", budget)
-      if (!budget) {
-          throw new Error('Budget non trouvé.');
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        budgetId: budgetId
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
+    });
 
-      return budget;
+    const budget = await prisma.budget.findUnique({
+      where: { id: budgetId }
+    });
+
+    return budget
+
   } catch (error) {
       console.error('Erreur lors de la récupération des transactions:', error);
       throw error;
