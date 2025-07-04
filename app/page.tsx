@@ -3,15 +3,18 @@ import Link from "next/link";
 import BudgetItemPrct from "./components/BudgetItemPrct";
 import { useEffect, useState } from "react";
 import { Budget } from "@/type";
-import { getBudgets } from "@/action";
+
+import { getBudgetsByUser } from "@/action";  /* getAllBudgets, */
+import Wrapper from "./components/Wrapper";
 
 export default function Home() {
 const [budgets, setBudgets] = useState<Budget[]>([]);
 
   const fetchBudgets = async () => {
-
-    const userBudgets = await getBudgets();
+   /*  const userBudgets = await getAllBudgets(); */
+   const userBudgets = await getBudgetsByUser("tlemcencrma20@gmail.com"); 
     setBudgets(userBudgets);
+    console.log(userBudgets);
   };
   
 
@@ -20,7 +23,7 @@ const [budgets, setBudgets] = useState<Budget[]>([]);
   }, []);
 
   return (
-    <div>
+    <Wrapper>
     
       <div className="flex items-center justify-center flex-col py-10 w-full">
         <div className="flex flex-col">
@@ -32,6 +35,7 @@ const [budgets, setBudgets] = useState<Budget[]>([]);
           {/* Afficher les budgets */}
           <ul className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {budgets.map((budget) => (
+            
             <Link href={`/manage/${budget.id}`} key={budget.id}>
               <BudgetItemPrct budget={budget} enableHover={1} />
             </Link>
@@ -39,7 +43,7 @@ const [budgets, setBudgets] = useState<Budget[]>([]);
         </ul>
         </div>
       </div>
-    </div>
+    </Wrapper>
   );
 }
 

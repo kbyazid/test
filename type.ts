@@ -1,10 +1,15 @@
+export interface User {
+    id: string;
+    email: string;
+  }
+
 export interface Budget {
     id: string;
     createdAt: Date;
     name: string;
     amount: number;
     emoji: string | null;
-    transactions?: Transaction[];
+    transaction?: Transaction[];
 }
 
 export interface Transaction {

@@ -6,7 +6,7 @@ export async function GET() {
     try {
         const connection = await mysql.createConnection({
             host: '91.204.209.8',       // ex: sql.ahlemkoubci.icu
-            user: 'ahlemkou_verceld',       // ex: ahlemkoubci_user
+            user: 'ahlemkou_vercel',       // ex: ahlemkoubci_user
             password: 'Pomaria121165',
             database: 'ahlemkou_tresorerie',
             port: 3306

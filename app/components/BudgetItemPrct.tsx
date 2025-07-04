@@ -8,9 +8,9 @@ interface BudgetItemProps {
 
 /* const BudgetItem: React.FC<BudgetItemProps> = ({ budget , enableHover, depenseColor = "text-gray-500"}) => { */
 const BudgetItemPrct = ({ budget, enableHover }: BudgetItemProps) => {
-    const transactionCount = budget.transactions ? budget.transactions.length : 0;
-    const totalTransactionAmount = budget.transactions
-        ? budget.transactions.reduce(
+    const transactionCount = budget.transaction ? budget.transaction.length : 0;
+    const totalTransactionAmount = budget.transaction
+        ? budget.transaction.reduce(
             (sum, transaction) => sum + transaction.amount, 0)
         : 0
     const percentage = Math.min(Math.round((totalTransactionAmount / budget.amount) * 100), 100);
@@ -73,7 +73,6 @@ const BudgetItemPrct = ({ budget, enableHover }: BudgetItemProps) => {
             <div>
                 <progress className="progress progress-accent w-full mt-4" value={progressValue} max="100"></progress>
             </div>
-
         </li>
     )
 };
