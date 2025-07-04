@@ -66,19 +66,12 @@ export async function getTransactionsByBudgetId(budgetId: string) {
   try {
       console.log("ID budget reçu :", budgetId)
       const budget = await prisma.budget.findUnique({
-          where: {
-              id: budgetId
-          },
-          include: {
-              transaction: {
-                  orderBy: {
-                    createdAt: "desc", // Tri décroissant
-                  },
-                },
-          },
-          
-          
-      })
+        where: { id: budgetId },
+        include: {
+          transaction: true, // Pas de tri ici
+        },
+      });
+      
       console.log("budget reçu :", budget)
       if (!budget) {
           throw new Error('Budget non trouvé.');
