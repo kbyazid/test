@@ -26,6 +26,7 @@ useEffect(() => {
     try {
       
         const budgetData = await getTransactionsByBudgetId(budgetId)
+        console.log(budgetData)
         setBudget(budgetData)
       
     } catch (error) {
