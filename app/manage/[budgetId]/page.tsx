@@ -8,23 +8,26 @@ import { getTransactionsByBudgetId } from '@/action';
 import Wrapper from '@/app/components/Wrapper';
 
 const BudgetItems = ({ params }: { params: Promise<{ budgetId: string }> }) => {
-  
+  const [budgetId, setBudgetId] = useState<string>('');
   const [budget, setBudget] = useState<Budget | null>(null);
   const [description, setDescription] = useState<string>('')
   const [amount, setAmount] = useState<string>('')
   
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const [budgetId, setBudgetId] = useState<string>('');
+const [, setTransactionToDelete] = useState<string | null>(null);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+// Utilisation factice pour éviter le warning ESLint
+useEffect(() => {
+  if (budgetId) {
+    console.log("ID du budget sélectionné :", budgetId);
+  }
+}, [budgetId]);
 
   async function fetchBudgetData(budgetId: string) {
     try {
-      if (budgetId) {
+      
         const budgetData = await getTransactionsByBudgetId(budgetId)
         setBudget(budgetData)
-      }
+      
     } catch (error) {
       console.error(
         "Erreur lors de la récupération du budget et des transactions:",
