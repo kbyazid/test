@@ -26,7 +26,11 @@ useEffect(() => {
     try {
       
         const budgetData = await getTransactionsByBudgetId(budgetId)
-        console.log(budgetData)
+        console.log("data :",budgetData)
+        if (!budgetData) {
+          console.warn("Aucun budget trouvé pour cet ID");
+          return;
+        }
         setBudget(budgetData)
       
     } catch (error) {

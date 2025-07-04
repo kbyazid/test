@@ -62,7 +62,7 @@ export async function getBudgetsByUser(email="tlemcencrma20@gmail.com") {
 }
 
 //////////////////////////////////////////////////////////////////////////
-export async function getTransactionsByBudgetId(budgetId: string) {
+/* export async function getTransactionsByBudgetId(budgetId: string) {
   try {
     const transactions = await prisma.transaction.findMany({
       where: {
@@ -83,4 +83,30 @@ export async function getTransactionsByBudgetId(budgetId: string) {
       console.error('Erreur lors de la récupération des transactions:', error);
       throw error;
   }
-}
+} */
+
+  export async function getTransactionsByBudgetId(budgetId: string, email = "tlemcencrma20@gmail.com") {
+    try {
+      const budget = await prisma.budget.findUnique({
+        where: {
+            id: budgetId
+        },
+        include: {
+            transaction: {
+                orderBy: {
+                  createdAt: "desc", // Tri décroissant
+                },
+              },
+        },
+        
+        
+    })
+
+  
+      return budget
+  
+    } catch (error) {
+      console.error('Erreur lors de la récupération du budget:', error);
+      throw error;
+    }
+  }
