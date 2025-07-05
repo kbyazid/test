@@ -35,7 +35,7 @@ const Navbar = () => {
                 {/* quand l ecran est plus grand on l affiche , on le cache qu on c est petit  */}
                 <div className="md:flex hidden space-x-2">
 
-                  <Link href={"/"} className="btn btn-sm">
+                  <Link href={"/users"} className="btn btn-sm">
                     Mes users
                   </Link>
                   <Link href={"/"} className="btn btn-sm">
@@ -44,7 +44,7 @@ const Navbar = () => {
                   <Link href={"/"} className="btn btn-sm">
                     Tableau de bord
                   </Link>
-                  <Link href={"/"} className="btn btn-sm">
+                  <Link href={"/transaction"} className="btn btn-sm">
                     Mes Transactions
                   </Link>
                 </div>
@@ -109,7 +109,7 @@ const Navbar = () => {
             {isMenuOpen && (
               <div className="md:hidden mt-2 flex flex-col items-center bg-base-100 rounded-lg shadow p-4 space-y-2 z-10 absolute top-full left-0 right-0 mx-5">
                 <Link
-                  href={"/"}
+                  href={"/users"}
                   className="btn btn-sm w-full"
                   onClick={toggleMenu}
                 >
@@ -130,7 +130,7 @@ const Navbar = () => {
                   Tableau de bord
                 </Link>
                 <Link
-                  href={"/"}
+                  href={"/transaction"}
                   className="btn btn-sm w-full"
                   onClick={toggleMenu}
                 >

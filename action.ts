@@ -10,7 +10,18 @@ export async function getAllMessages() {
       },
     });
   }
-//////////////////////////////////////////////////////////////////////////
+/* ======================================================================= */
+
+export async function getAllUsers() {
+  return await prisma.user.findMany({
+    select: {
+      id: true,
+      email: true,
+    },
+  });
+}
+
+/* ======================================================================= */
   export async function getAllBudgets() {
     try {
       const allBudget = await prisma.budget.findMany({
