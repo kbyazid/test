@@ -35,7 +35,7 @@ const [budgets, setBudgets] = useState<Budget[]>([]);
           {/* Afficher les budgets */}
           <ul className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {budgets.map((budget) => (
-            
+            /* href={`/manage/${budget.id}`} key={budget.id} */
             <Link href={`/manage/${budget.id}`} key={budget.id}>
               <BudgetItemPrct budget={budget} enableHover={1} />
             </Link>
