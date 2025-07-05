@@ -22,6 +22,22 @@ export async function getAllUsers() {
 }
 
 /* ======================================================================= */
+export async function getAllTransactions() {
+  return await prisma.transaction.findMany({
+    select: {
+      id: true,
+      description: true,
+      amount: true,
+      budgetId: true,
+      emoji: true,
+      createdAt: true,
+      type: true,
+      userId: true,
+    },
+  });
+}
+
+/* ======================================================================= */
   export async function getAllBudgets() {
     try {
       const allBudget = await prisma.budget.findMany({
