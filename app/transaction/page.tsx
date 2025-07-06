@@ -3,14 +3,19 @@
 import { Transaction } from '@/type'
 import Wrapper from '../components/Wrapper'
 import React, { useEffect, useState } from 'react'
-import { getAllTransactions } from '@/action';
+import { getAllTransactions, getTotalTransactionAmountByEmail } from '@/action';
 import Notification, { NotificationType, NotificationPosition } from '@/app/components/Notification'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {  
+    ArrowDownCircle,
+    ArrowUpCircle,
+    CircleDollarSignIcon,
     Trash, 
     View 
   } from 'lucide-react'
   import Link from 'next/link'
+import DashboardCard from '../components/DashboardCard';
+import TransactionCard from '../components/TransactionCard';
 
 
 // Types et interfaces
@@ -22,15 +27,18 @@ interface NotificationDetails {
   position: NotificationPosition;
 }
 
-/* type Totals = {
+type Totals = {
   balance: number
   totalIncome: number
   totalExpenses: number
-} */
+} 
 
 const TransactionPage = () => {
-  /* const [loading, setLoading] = useState<boolean>(true)   */
+    // États
+  
+  const [loading, setLoading] = useState<boolean>(true)   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [totals, setTotals] = useState<Totals | null>(null)
   const [, setTransactionToDelete] = useState<string | null>(null)
   const [notification, setNotification] = useState<NotificationDetails | null>(null)  
   // Fonctions utilitaires
@@ -44,19 +52,36 @@ const TransactionPage = () => {
   };
   
   /* const transactions = await getAllTransactions(); */   /* - Récupération des Transactions */
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const data = await getAllTransactions();
-        setTransactions(data);
-        showNotification("Transactions chargées", "success", "top-center");
-      } catch (error) {
-        console.error("Erreur de chargement :", error);
-        showNotification("Erreur lors du chargement", "error", "top-center");
-      }
-    };
+  // Gestion des transactions
+  const fetchTransactions = async () => {
+    setLoading(true)
+    try {
+      const data = await getAllTransactions();
+      setTransactions(data);
+      showNotification("Transactions chargées", "success", "top-center");
+    } catch (error) {
+      console.error("Erreur de chargement :", error);
+      showNotification("Erreur lors du chargement", "error", "top-center");
+    } finally {
+      setLoading(false)
+    }
+  };
 
+  const fetchTotals = async () => {
+        
+    try {
+      const result = await getTotalTransactionAmountByEmail()
+      setTotals(result || null); // Utilisez || null pour gérer le cas où 'result' est undefined
+    } catch (err) {
+      console.error("Failed to fetch totals:", err)
+      showNotification("Erreur lors de la récupération des totaux.", "error", "top-center")
+    }
+  };
+
+   // Effets
+  useEffect(() => { 
     fetchTransactions();
+    fetchTotals();
   }, []);
   
   /* showNotification("Test notification.", "error", "top-center") */
@@ -73,8 +98,34 @@ const TransactionPage = () => {
         />
       )}
 
+      {/* Cards */}
+      <div className="grid md:grid-cols-3 gap-4 mb-4">
+        <DashboardCard
+          label="Solde"
+          value={totals?.balance != null ? formatCurrency(totals.balance) : "N/A"}
+          icon={<CircleDollarSignIcon />}
+        />
+
+        <TransactionCard
+          label="Recettes"
+          value={totals?.totalIncome != null ? formatCurrency(totals.totalIncome) : "N/A"}
+          icon={<ArrowDownCircle className="text-blue-600 w-8 h-8" />}
+          cardColor="income"
+        />
+
+        <TransactionCard
+          label="Dépenses"
+          value={totals?.totalExpenses != null ? formatCurrency(totals.totalExpenses) : "N/A"}
+          icon={<ArrowUpCircle className="text-red-600 w-8 h-8" />}
+          cardColor="expense"
+        />
+      </div>
+
       {/* Transactions List */}
-      
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        
         <TransactionsTable 
           transactions={transactions}
           onDelete={(id) => {
@@ -82,16 +133,18 @@ const TransactionPage = () => {
             ;(document.getElementById('delete_transaction_modal') as HTMLDialogElement)?.showModal()
           }}
         />
-     
-
-    
-  
+    )}
   </Wrapper>
   )
 }
 
 // Sous-composants
-
+const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-10">
+      <span className="loading loading-spinner loading-lg text-accent"></span>
+      <span className="ml-4 font-bold text-accent">Chargement des transactions...</span>
+    </div>
+  )
 
 const TransactionsTable = ({
     transactions,
