@@ -12,7 +12,27 @@ export function cn(...inputs: ClassValue[]) {
  * @param decimals Nombre de décimales à afficher (par défaut 2)
  * @returns Montant formaté (ex: "1 234,56 DA")
  */
-export function formatCurrency(
+
+ export function formatCurrency(
+  amount: number,
+  currency: string = "DA",
+  decimals: number = 2
+): string {
+  // Gestion des valeurs non numériques
+  if (isNaN(amount)) return `0,00 ${currency}`
+
+  // 🔒 Correction de l'imprécision en arrondissant manuellement
+  const rounded = Math.round((amount + Number.EPSILON) * 10 ** decimals) / 10 ** decimals;
+
+  const formattedAmount = new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  }).format(rounded)
+
+  return `${formattedAmount} ${currency}`
+}
+
+/* export function formatCurrency(
   amount: number,
   currency: string = "DA",
   decimals: number = 2
@@ -28,7 +48,7 @@ export function formatCurrency(
 
   return `${formattedAmount} ${currency}`
 }
-
+ */
 /**
  * Formate une date selon les options spécifiées
  * @param date Date à formater (string, Date ou timestamp)

@@ -15,7 +15,7 @@ model test_connection {
 }
 
 model budget {
-  id          String        @id
+  id          String         @id @default(uuid())
   name        String
   amount      Float
   userId      String
@@ -28,7 +28,7 @@ model budget {
 }
 
 model transaction {
-  id          String           @id
+  id          String            @id @default(uuid())
   description String
   amount      Float
   budgetId    String?
@@ -44,7 +44,7 @@ model transaction {
 }
 
 model user {
-  id          String        @id
+  id          String        @id @default(uuid())
   email       String        @unique(map: "User_email_key")
   createdAt   DateTime      @default(now())
   budget      budget[]

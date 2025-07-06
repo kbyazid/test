@@ -1,4 +1,5 @@
 "use server"  // Important pour les Server Actions de Next.js
+import { Prisma } from "@prisma/client/extension";
 import { Budget, Transaction } from "./type";
 import prisma from "@/lib/prisma";
 
@@ -259,15 +260,24 @@ export async function getTotalTransactionAmountByEmail( email = "tlemcencrma20@g
       })
       if (!user) throw new Error("Utilisateur non trouvé");
 
-      const totalIncome = user.transaction
+      const totalIncomeRaw = user.transaction
           .filter(t => t.type === 'income')
           .reduce((acc, t) => acc + t.amount, 0);
 
-      const totalExpenses = user.transaction
+      const totalExpensesRaw = user.transaction
           .filter(t => t.type === 'expense')
           .reduce((acc, t) => acc + t.amount, 0);
 
-      const balance = totalIncome - totalExpenses;
+          // 🔒 Arrondir pour éviter les erreurs de flottants
+const round = (val: number, decimals = 2) =>
+  Math.round((val + Number.EPSILON) * 10 ** decimals) / 10 ** decimals;
+
+const totalIncome = round(totalIncomeRaw);
+const totalExpenses = round(totalExpensesRaw);
+
+// Optionnel : calcul du solde
+const balance = round(totalIncome - totalExpenses);
+     /*  const balance = totalIncome - totalExpenses; */
 
      
       return {
@@ -278,6 +288,45 @@ export async function getTotalTransactionAmountByEmail( email = "tlemcencrma20@g
 
   } catch (error) {
       console.error('Erreur lors de la récupération des transactions:', error);
+      throw error;
+  }
+}
+/* ======================================================================= */
+export async function addIncomeTransaction(
+  amount: number,
+  description: string,
+  email: string,
+) {
+  /* Bloc try catch  */
+  try {
+      const type =  'income'
+
+  // recherche user ds notre table local user
+      const user = await prisma.user.findUnique({
+          where: { email }
+      })
+
+      if (!user) {
+          throw new Error('Utilisateur non trouvé')
+      } 
+
+      const capitalized = description.charAt(0).toUpperCase()+ description.slice(1)
+      description = capitalized
+
+      const newTransaction = await prisma.transaction.create({
+          data: {
+              amount,
+              description,
+              emoji: null,
+              type:type, 
+              userId: user.id,
+              budgetId:null,
+          }
+      })   
+      
+
+  } catch (error) {
+      console.error('Erreur lors de l\'ajout de la transaction:', error);
       throw error;
   }
 }

@@ -16,7 +16,8 @@ const TransactionCard = ({ label, value, icon, cardColor = "income" }: Transacti
               <span className="text-gray-500  text-sm">{label}</span>
               <span className={`text-xl font-bold ${ cardColor === "income" ? "text-blue-600" : "text-red-600"}`}>
                    {/* On convertit `value` en string avant de le passer à parseFloat */}
-                   {parseFloat(String(value)).toFixed(2)} Da   
+                   {/* {parseFloat(String(value)).toFixed(2)} Da   */} 
+                   {value}
               </span>
           </div>
           {/* className="bg-accent w-9 h-9 rounded-full p-1 text-white flex items-center justify-center" */}

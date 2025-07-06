@@ -2,9 +2,10 @@ type DashboardCardProps = {
     label: string;
     value: string | number;
     icon: React.ReactNode;
+    
   };
 
-const DashboardCard = ({ label, value, icon }: DashboardCardProps) => {
+const DashboardCard = ({ label, value, icon  }: DashboardCardProps) => {
   return (
     <div className="border-2 border-gray-300 p-5 flex justify-between items-center rounded-xl">
       <div className="flex flex-col">

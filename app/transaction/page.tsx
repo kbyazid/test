@@ -2,8 +2,8 @@
 
 import { Transaction } from '@/type'
 import Wrapper from '../components/Wrapper'
-import React, { useEffect, useState } from 'react'
-import { getAllTransactions, getTotalTransactionAmountByEmail } from '@/action';
+import React, {  useEffect, useState } from 'react'
+import { addIncomeTransaction, getAllTransactions, getTotalTransactionAmountByEmail } from '@/action';
 import Notification, { NotificationType, NotificationPosition } from '@/app/components/Notification'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {  
@@ -35,7 +35,9 @@ type Totals = {
 
 const TransactionPage = () => {
     // États
-  
+  const [description, setDescription] = useState('')
+  const [amount, setAmount] = useState('')
+  const [isAdding, setIsAdding] = useState(false)
   const [loading, setLoading] = useState<boolean>(true)   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [totals, setTotals] = useState<Totals | null>(null)
@@ -82,8 +84,67 @@ const TransactionPage = () => {
   useEffect(() => { 
     fetchTransactions();
     fetchTotals();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
+  const handleAddTransaction = async () => {
+    /* if (!user?.primaryEmailAddress?.emailAddress) return */
+    
+    try {
+      setIsAdding(true)
+      const MIN_LOADING_TIME = 500
+      const start = Date.now()
+
+      // Validation
+      const amountNumber = parseFloat(amount)
+      if (isNaN(amountNumber) || amountNumber <= 0) {
+        showNotification("Le montant doit être un nombre positif.", "warning", "top-center")
+        return
+      }
+
+      const trimmedDescription = description.trim()
+      if (!trimmedDescription) {
+        showNotification("La description est requise.", "error", "top-center")
+        return
+      }
+
+      await addIncomeTransaction(
+        amountNumber, 
+        trimmedDescription, 
+        "tlemcencrma20@gmail.com"
+      )
+      
+      await Promise.all([
+        fetchTransactions(),
+        fetchTotals()
+      ])
+
+      // Fermeture modale
+      const modal = document.getElementById("add_income_modal") as HTMLDialogElement | null
+      modal?.close()
+
+      // Minimum loading time for better UX
+      const elapsed = Date.now() - start
+      const remainingTime = MIN_LOADING_TIME - elapsed
+      if (remainingTime > 0) {
+        await new Promise(resolve => setTimeout(resolve, remainingTime))
+      }
+
+      showNotification('Depense ajoutée avec succès', 'info', 'bottom-right')
+      setAmount('')
+      setDescription('')
+    } catch (error) {
+      console.error("Failed to add transaction:", error)
+      showNotification(
+        error instanceof Error ? error.message : "Une erreur est survenue",
+        "error",
+        "top-center"
+      )
+    } finally {
+      setIsAdding(false)
+    }
+  };
+
   /* showNotification("Test notification.", "error", "top-center") */
   // Rendu
   return (
@@ -98,6 +159,31 @@ const TransactionPage = () => {
         />
       )}
 
+       {/* Modals */}
+      
+    <AddIncomeModal 
+        description={description}
+        amount={amount}
+        isAdding={isAdding}
+        onDescriptionChange={setDescription}
+        onAmountChange={setAmount}
+        onSubmit={handleAddTransaction}
+      />
+
+ {/* Header */}
+ <div className="space-y-6 mb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Recettes / Dépenses</h1>
+          <p className="text-muted-foreground">Suivez et gérez vos transactions.</p>
+        </div>
+        <button
+          onClick={() => (document.getElementById('add_income_modal') as HTMLDialogElement)?.showModal()}
+          className='btn mt-2'
+        >
+          Ajouter une recette
+        </button>
+      </div>
+
       {/* Cards */}
       <div className="grid md:grid-cols-3 gap-4 mb-4">
         <DashboardCard
@@ -105,10 +191,19 @@ const TransactionPage = () => {
           value={totals?.balance != null ? formatCurrency(totals.balance) : "N/A"}
           icon={<CircleDollarSignIcon />}
         />
-
-        <TransactionCard
+{/*         <DashboardCard
           label="Recettes"
           value={totals?.totalIncome != null ? formatCurrency(totals.totalIncome) : "N/A"}
+          icon={<ArrowDownCircle className="text-blue-600 w-8 h-8" />}
+        />
+        <DashboardCard
+          label="Dépenses"
+          value={totals?.totalExpenses != null ? formatCurrency(totals.totalExpenses) : "N/A"}
+          icon={<ArrowUpCircle className="text-red-600 w-8 h-8" />}
+        /> */}
+        <TransactionCard
+          label="Recettes"
+          value={totals?.totalIncome != null ? formatCurrency(totals.totalIncome): "N/A"}
           icon={<ArrowDownCircle className="text-blue-600 w-8 h-8" />}
           cardColor="income"
         />
@@ -144,6 +239,62 @@ const LoadingSpinner = () => (
       <span className="loading loading-spinner loading-lg text-accent"></span>
       <span className="ml-4 font-bold text-accent">Chargement des transactions...</span>
     </div>
+  )
+
+  const AddIncomeModal = ({
+    description,
+    amount,
+    isAdding,
+    onDescriptionChange,
+    onAmountChange,
+    onSubmit
+  }: {
+    description: string,
+    amount: string,
+    isAdding: boolean,
+    onDescriptionChange: (value: string) => void,
+    onAmountChange: (value: string) => void,
+    onSubmit: () => void
+  }) => (
+    <dialog id="add_income_modal" className="modal">
+      <div className="modal-box">
+        <form method="dialog">
+          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 className="font-bold text-lg">Creation d une recette</h3>
+        <p className="py-4">Ajoutez une nouvelle entree de revenu.</p>
+        <div className="w-full flex flex-col space-y-4 mt-4">
+          <input
+            type="text"
+            value={description}
+            onChange={(e) => onDescriptionChange(e.target.value)}
+            placeholder="Description de la recette"
+            required
+            className="input input-bordered"
+          />
+          <input
+            type="number"
+            placeholder="Montant"
+            value={amount}
+            onChange={(e) => onAmountChange(e.target.value)}
+            required
+            className="input input-bordered"
+          />
+          <button 
+            onClick={onSubmit} 
+            className="btn" 
+            disabled={isAdding || !description.trim() || !amount}
+          >
+            {isAdding ? (
+              <>
+                <span className="loading loading-spinner loading-sm mr-2"></span>
+                Création...
+              </>
+            ) : "Ajouter Recette"}
+          </button>
+        </div>
+      </div>
+    </dialog>
   )
 
 const TransactionsTable = ({
