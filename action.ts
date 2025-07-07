@@ -330,3 +330,33 @@ export async function addIncomeTransaction(
       throw error;
   }
 }
+
+/* ======================================================================= */
+export async function deleteTransaction(transactionId: string) {
+ 
+  try {
+      // Validation des données
+      if (!transactionId) throw new Error("ID manquant");
+
+      console.log(" id de la transact", transactionId)
+      // Appel à Prisma
+      const transaction = await prisma.transaction.findUnique({
+          where: {
+              id: transactionId
+          }
+      })
+
+      if (!transaction) {
+          throw new Error('Transaction non trouvée.');
+      }
+
+      await prisma.transaction.delete({
+          where: {
+              id: transactionId,
+          },
+      });
+  } catch (error) {
+      console.error('Erreur lors de la suppressio de la transaction:', error);
+      throw error;
+  }
+}

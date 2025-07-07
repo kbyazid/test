@@ -2,8 +2,8 @@
 
 import { Transaction } from '@/type'
 import Wrapper from '../components/Wrapper'
-import React, {  useEffect, useState } from 'react'
-import { addIncomeTransaction, getAllTransactions, getTotalTransactionAmountByEmail } from '@/action';
+import React, {  useCallback, useEffect, useState } from 'react'
+import { addIncomeTransaction, deleteTransaction,  getAllTransactions, getTotalTransactionAmountByEmail } from '@/action';
 import Notification, { NotificationType, NotificationPosition } from '@/app/components/Notification'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {  
@@ -40,8 +40,9 @@ const TransactionPage = () => {
   const [isAdding, setIsAdding] = useState(false)
   const [loading, setLoading] = useState<boolean>(true)   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null)
   const [totals, setTotals] = useState<Totals | null>(null)
-  const [, setTransactionToDelete] = useState<string | null>(null)
+/*   const [, setTransactionToDelete] = useState<string | null>(null) */
   const [notification, setNotification] = useState<NotificationDetails | null>(null)  
   // Fonctions utilitaires
  
@@ -145,6 +146,26 @@ const TransactionPage = () => {
     }
   };
 
+  const handleDeleteTransaction = useCallback(async () => {
+    if (!transactionToDelete) return
+
+    try {
+      await deleteTransaction(transactionToDelete)
+      await fetchTransactions()
+      await fetchTotals()
+
+      // ✅ Fermer la modale après suppression
+    const modal = document.getElementById("delete_transaction_modal") as HTMLDialogElement | null
+    modal?.close()
+
+      showNotification('Depense supprimée avec succès.', 'success', 'bottom-center')
+      setTransactionToDelete(null)
+    } catch (error) {
+      console.error("Failed to delete transaction:", error)
+      showNotification("Erreur lors de la suppression de la transaction.", "error", "top-center")
+    }
+  }, [transactionToDelete])
+
   /* showNotification("Test notification.", "error", "top-center") */
   // Rendu
   return (
@@ -160,7 +181,16 @@ const TransactionPage = () => {
       )}
 
        {/* Modals */}
-      
+          
+    <DeleteTransactionModal 
+        onConfirm={handleDeleteTransaction}
+        onCancel={() => {
+  setTransactionToDelete(null)
+  const modal = document.getElementById("delete_transaction_modal") as HTMLDialogElement | null
+  modal?.close()
+}}
+    />  
+
     <AddIncomeModal 
         description={description}
         amount={amount}
@@ -291,6 +321,32 @@ const LoadingSpinner = () => (
                 Création...
               </>
             ) : "Ajouter Recette"}
+          </button>
+        </div>
+      </div>
+    </dialog>
+  )
+
+  const DeleteTransactionModal = ({ 
+    onConfirm, 
+    onCancel 
+  }: { 
+    onConfirm: () => void, 
+    onCancel: () => void 
+  }) => (
+    <dialog id="delete_transaction_modal" className="modal">
+      <div className="modal-box">
+        <form method="dialog">
+          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 className="font-bold text-lg">Confirmation de suppression</h3>
+        <p className="py-4">Êtes-vous sûr de vouloir supprimer cette transaction ?</p>
+        <div className="flex justify-end gap-4">
+          <button className="btn btn-ghost" onClick={onCancel}>
+            Annuler
+          </button>
+          <button className="btn btn-error" onClick={onConfirm}>
+            Supprimer
           </button>
         </div>
       </div>
