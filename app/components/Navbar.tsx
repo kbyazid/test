@@ -38,7 +38,7 @@ const Navbar = () => {
                   <Link href={"/users"} className="btn btn-sm">
                     Mes users
                   </Link>
-                  <Link href={"/"} className="btn btn-sm">
+                  <Link href={"/budget"} className="btn btn-sm">
                     Mes budjets
                   </Link>
                   <Link href={"/"} className="btn btn-sm">
@@ -116,7 +116,7 @@ const Navbar = () => {
                   Mes users
                 </Link>
                 <Link
-                  href={"/"}
+                  href={"/budget"}
                   className="btn btn-sm w-full"
                   onClick={toggleMenu}
                 >

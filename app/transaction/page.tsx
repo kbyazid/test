@@ -76,7 +76,7 @@ const TransactionPage = () => {
 
       setTransactions(data|| []); // Utilisez || [] pour gérer undefined
       setCurrentPeriod(period)
-      showNotification("Transactions chargées", "success", "top-center");
+      /* showNotification("Transactions chargées", "success", "top-center"); */
     } catch (error) {
       console.error("Erreur de chargement :", error);
       showNotification("Erreur lors du chargement", "error", "top-center");
@@ -429,7 +429,7 @@ const LoadingSpinner = () => (
           onClick={() => (document.getElementById('add_income_modal') as HTMLDialogElement)?.showModal()}
           className='btn btn-accent mt-6'
         >
-          Ajouter votre première recette
+          Ajouter votre première recette de la periode
         </button>
       )}
     </div>

@@ -394,11 +394,13 @@ export async function getTransactionsByPeriod(email:string , period: string) {
           where: { email },
           include: {
               transaction: {
-                  where: {
-                      createdAt: {
-                          gte: dateLimit
-                      }
-                  },
+                where: dateLimit
+                ? {
+                    createdAt: {
+                      gte: dateLimit,
+                    },
+                  }
+                : undefined,
                   orderBy: {
                       createdAt: 'desc'
                   },
@@ -413,8 +415,10 @@ export async function getTransactionsByPeriod(email:string , period: string) {
               }
           }
       })
-
-      const transactionsWithBudgetName = trUser?.transaction.flatMap(transact => ({
+      if (!trUser) {
+        throw new Error("Utilisateur non trouvé.");
+      }
+      const transactionsWithBudgetName = trUser?.transaction.map(transact => ({
         ...transact,
         budgetName: transact.budget?.name ?? null,
         budgetId: transact.budget?.id ?? null
@@ -427,4 +431,64 @@ export async function getTransactionsByPeriod(email:string , period: string) {
       console.error('Erreur lors de la récupération des transactions:', error);
       throw error;
   }
+}
+
+/* ======================================================================= */
+export async function addBudget(email = "tlemcencrma20@gmail.com", name: string, amount: number, selectedEmoji: string) {
+  try {
+      const user = await prisma.user.findUnique({
+          where: { email }
+      })
+
+      if (!user) {
+          throw new Error('Utilisateur non trouvé')
+      }
+      const capitalized = name.charAt(0).toUpperCase()+ name.slice(1)
+      name = capitalized
+      await prisma.budget.create({
+          data: {
+              name,
+              amount,
+              emoji: selectedEmoji,
+              userId: user.id
+          }
+      })
+  } catch (error) {
+      console.error('Erreur lors de l\'ajout du budget:', error);
+      throw error
+  }
+}
+/* ======================================================================= */
+export const deleteBudget = async (budgetId: string) => {
+  try {
+      // Validation des données
+      if (!budgetId) throw new Error("ID manquant");
+     
+      console.log(" id du budget", budgetId)     
+      const budget = await prisma.budget.findUnique({
+          where: {
+              id: budgetId
+          }
+      })
+
+      if (!budget) {
+          throw new Error('Budget non trouvée.');
+      }
+
+      // Appel à Prisma
+      await prisma.transaction.deleteMany({
+          where: { budgetId }
+      })
+
+      await prisma.budget.delete({
+          where: {
+              id: budgetId,
+          },
+      });
+
+  } catch (error) {
+      console.error('Erreur lors de la suppressio de la transaction:', error);
+      throw error;
+  } 
+
 }
