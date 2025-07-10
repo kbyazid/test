@@ -3,13 +3,15 @@
 import { Transaction } from '@/type'
 import Wrapper from '../components/Wrapper'
 import React, {  useCallback, useEffect, useState } from 'react'
-import { addIncomeTransaction, deleteTransaction,  getAllTransactions, getTotalTransactionAmountByEmail } from '@/action';
+import { addIncomeTransaction, deleteTransaction,  getTotalTransactionAmountByEmail, getTransactionsByPeriod } from '@/action';
 import Notification, { NotificationType, NotificationPosition } from '@/app/components/Notification'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {  
     ArrowDownCircle,
     ArrowUpCircle,
     CircleDollarSignIcon,
+    Send,
+    Search, 
     Trash, 
     View 
   } from 'lucide-react'
@@ -19,7 +21,7 @@ import TransactionCard from '../components/TransactionCard';
 
 
 // Types et interfaces
-/* type Period = 'last7' | 'last30' | 'last90' | 'last365' | 'all' */
+type Period = 'last7' | 'last30' | 'last90' | 'last365' | 'all' 
 
 interface NotificationDetails {
   message: string;
@@ -41,9 +43,12 @@ const TransactionPage = () => {
   const [loading, setLoading] = useState<boolean>(true)   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null)
+  /*   const [, setTransactionToDelete] = useState<string | null>(null) */
   const [totals, setTotals] = useState<Totals | null>(null)
-/*   const [, setTransactionToDelete] = useState<string | null>(null) */
   const [notification, setNotification] = useState<NotificationDetails | null>(null)  
+  const [searchQuery, setSearchQuery] = useState("")
+  const [currentPeriod, setCurrentPeriod] = useState<Period>('last30')
+
   // Fonctions utilitaires
  
   const showNotification = (message: string, type: NotificationType, position: NotificationPosition) => {
@@ -53,14 +58,24 @@ const TransactionPage = () => {
   const handleCloseNotification = () => {
     setNotification(null);
   };
+
+  const closeModal = (modalId: string) => {
+    const modal = document.getElementById(modalId) as HTMLDialogElement | null
+    modal?.close()
+  }
   
   /* const transactions = await getAllTransactions(); */   /* - Récupération des Transactions */
   // Gestion des transactions
-  const fetchTransactions = async () => {
+  // Récupérer les transactions pour une période donnée
+  const fetchTransactions = async (period: Period) => {
     setLoading(true)
     try {
-      const data = await getAllTransactions();
-      setTransactions(data);
+      const data = await getTransactionsByPeriod("tlemcencrma20@gmail.com",period);
+      console.log("📦 Données reçues pour la période:", period, data); // ← AJOUT ICI
+      console.log(`🔢 ${data?.length ?? 0} transactions récupérées`);
+
+      setTransactions(data|| []); // Utilisez || [] pour gérer undefined
+      setCurrentPeriod(period)
       showNotification("Transactions chargées", "success", "top-center");
     } catch (error) {
       console.error("Erreur de chargement :", error);
@@ -83,10 +98,10 @@ const TransactionPage = () => {
 
    // Effets
   useEffect(() => { 
-    fetchTransactions();
+    fetchTransactions(currentPeriod);
     fetchTotals();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentPeriod]);
   
   const handleAddTransaction = async () => {
     /* if (!user?.primaryEmailAddress?.emailAddress) return */
@@ -116,13 +131,15 @@ const TransactionPage = () => {
       )
       
       await Promise.all([
-        fetchTransactions(),
+        fetchTransactions(currentPeriod),
         fetchTotals()
       ])
 
       // Fermeture modale
-      const modal = document.getElementById("add_income_modal") as HTMLDialogElement | null
-      modal?.close()
+    /*   const modal = document.getElementById("add_income_modal") as HTMLDialogElement | null
+      modal?.close() */
+
+      closeModal("add_income_modal")
 
       // Minimum loading time for better UX
       const elapsed = Date.now() - start
@@ -151,20 +168,27 @@ const TransactionPage = () => {
 
     try {
       await deleteTransaction(transactionToDelete)
-      await fetchTransactions()
+      await fetchTransactions(currentPeriod)
       await fetchTotals()
 
       // ✅ Fermer la modale après suppression
-    const modal = document.getElementById("delete_transaction_modal") as HTMLDialogElement | null
-    modal?.close()
+   /*  const modal = document.getElementById("delete_transaction_modal") as HTMLDialogElement | null
+    modal?.close() */
+    closeModal("delete_transaction_modal")
 
       showNotification('Depense supprimée avec succès.', 'success', 'bottom-center')
       setTransactionToDelete(null)
     } catch (error) {
-      console.error("Failed to delete transaction:", error)
+      console.error("Erreur lors de la suppression de la transaction:", error)
       showNotification("Erreur lors de la suppression de la transaction.", "error", "top-center")
     }
-  }, [transactionToDelete])
+  }, [transactionToDelete, currentPeriod])
+
+  // Filtrage
+  const filteredTransactions = transactions.filter(transaction => 
+    transaction.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (transaction.budgetName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
+  )
 
   /* showNotification("Test notification.", "error", "top-center") */
   // Rendu
@@ -185,9 +209,10 @@ const TransactionPage = () => {
     <DeleteTransactionModal 
         onConfirm={handleDeleteTransaction}
         onCancel={() => {
-  setTransactionToDelete(null)
-  const modal = document.getElementById("delete_transaction_modal") as HTMLDialogElement | null
-  modal?.close()
+            setTransactionToDelete(null)
+            closeModal("delete_transaction_modal")
+            /* const modal = document.getElementById("delete_transaction_modal") as HTMLDialogElement | null
+            modal?.close() */
 }}
     />  
 
@@ -246,13 +271,45 @@ const TransactionPage = () => {
         />
       </div>
 
+      {/* Search and Filter */}
+      <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
+        <div className="relative w-full md:flex-1">
+          <Search className="absolute left-2.5 top-3.5 h-4 w-4 text-muted-foreground" />
+          <input
+            type="search"
+            value={searchQuery}
+            placeholder="Rechercher par description ou budget..."
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="input input-bordered w-full pl-8"
+          />
+        </div>
+        <div className='w-full md:w-auto flex justify-end'>
+          <select
+            className='input input-bordered input-md w-full md:w-auto'
+            value={currentPeriod}
+            onChange={(e) => fetchTransactions(e.target.value as Period)}
+          >
+            <option value="last7">Derniers 7 jours</option>
+            <option value="last30">Derniers 30 jours</option>
+            <option value="last90">Derniers 90 jours</option>
+            <option value="last365">Derniers 365 jours</option>
+            <option value="all">Toutes les transactions</option>
+          </select>
+        </div>
+      </div>
+
       {/* Transactions List */}
       {loading ? (
         <LoadingSpinner />
+      ) : filteredTransactions.length === 0 ? (
+        <EmptyState 
+          searchQuery={searchQuery} 
+          transactionsCount={transactions.length}
+        />
       ) : (
         
         <TransactionsTable 
-          transactions={transactions}
+          transactions={filteredTransactions}
           onDelete={(id) => {
             setTransactionToDelete(id)
             ;(document.getElementById('delete_transaction_modal') as HTMLDialogElement)?.showModal()
@@ -353,6 +410,31 @@ const LoadingSpinner = () => (
     </dialog>
   )
 
+  const EmptyState = ({ 
+    searchQuery, 
+    transactionsCount 
+  }: { 
+    searchQuery: string, 
+    transactionsCount: number 
+  }) => (
+    <div className='flex flex-col justify-center items-center h-64 text-center'>
+      <Send strokeWidth={1.5} className='w-12 h-12 text-accent mb-4' />
+      <span className='text-gray-500 text-xl'>
+        {searchQuery ? 
+          "Aucune transaction ne correspond à votre recherche." : 
+          "Aucune transaction à afficher pour le moment."}
+      </span>
+      {!searchQuery && transactionsCount === 0 && (
+        <button
+          onClick={() => (document.getElementById('add_income_modal') as HTMLDialogElement)?.showModal()}
+          className='btn btn-accent mt-6'
+        >
+          Ajouter votre première recette
+        </button>
+      )}
+    </div>
+  )
+  
 const TransactionsTable = ({
     transactions,
     onDelete

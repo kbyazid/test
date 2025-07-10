@@ -360,3 +360,71 @@ export async function deleteTransaction(transactionId: string) {
       throw error;
   }
 }
+
+export async function getTransactionsByPeriod(email:string , period: string) {
+  try {
+      const now = new Date();
+      let dateLimit: Date | undefined;
+
+      switch (period) {
+          case 'last30':
+              dateLimit = new Date(now)
+              dateLimit.setDate(now.getDate() - 30);
+              break
+          case 'last90':
+              dateLimit = new Date(now)
+              dateLimit.setDate(now.getDate() - 90);
+              break
+          case 'last7':
+              dateLimit = new Date(now)
+              dateLimit.setDate(now.getDate() - 7);
+              break
+          case 'last365':
+              dateLimit = new Date(now)
+              dateLimit.setFullYear(now.getFullYear() - 1);
+              break
+          case "all":
+              dateLimit = undefined; // Pas de limite de date pour "all"
+              break;
+          default:
+              throw new Error('Période invalide.');
+      }
+
+      const trUser = await prisma.user.findUnique({
+          where: { email },
+          include: {
+              transaction: {
+                  where: {
+                      createdAt: {
+                          gte: dateLimit
+                      }
+                  },
+                  orderBy: {
+                      createdAt: 'desc'
+                  },
+                  include: {
+                      budget: {
+                          select: {
+                              name: true,
+                              id: true
+                          }
+                      }
+                  }
+              }
+          }
+      })
+
+      const transactionsWithBudgetName = trUser?.transaction.flatMap(transact => ({
+        ...transact,
+        budgetName: transact.budget?.name ?? null,
+        budgetId: transact.budget?.id ?? null
+    }))
+      
+
+      return transactionsWithBudgetName 
+
+  } catch (error) {
+      console.error('Erreur lors de la récupération des transactions:', error);
+      throw error;
+  }
+}
