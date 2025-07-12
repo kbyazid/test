@@ -33,7 +33,23 @@ const BudgetDetailPage = () => {
     setNotification(null);
   };
 
-  const fetchBudgetData = async (budgetId: string) => {
+  const fetchBudgeTran = async (budgetId: string) => {
+    try {
+      setLoading(true);
+      const budgetData = await getTransactionsByBudgetId(budgetId, "tlemcencrma20@gmail.com");
+      setBudget(budgetData);
+    } catch (error) {
+      showNotification(
+        error instanceof Error ? error.message : "Erreur lors du chargement du budget",
+        "error",
+        "top-center"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* const fetchBudgetData = async (budgetId: string) => {
     try {
       setLoading(true);
       const budgetData = await getTransactionsByBudgetId(budgetId);
@@ -47,14 +63,14 @@ const BudgetDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }; */
 
   const handleDeleteTransaction = async () => {
     if (!transactionToDelete) return;
 
     try {
       await deleteTransaction(transactionToDelete);
-      await fetchBudgetData(budgetId);
+      await fetchBudgeTran(budgetId);
       setTransactionToDelete(null);
       showNotification("Transaction supprimée avec succès", "success", "bottom-center");
       (document.getElementById("delete_transaction_modal") as HTMLDialogElement)?.close();
@@ -72,7 +88,10 @@ const BudgetDetailPage = () => {
       showNotification("Erreur : ID du budget non trouvé", "error", "top-center");
       return;
     }
-    fetchBudgetData(budgetId);
+    fetchBudgeTran(budgetId); 
+    showNotification(`Info : ID du budget : ${budgetId}`, "info", "top-center")
+   
+      return;
   }, [budgetId]);
 
   if (!budgetId) {

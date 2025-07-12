@@ -10,7 +10,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^6.10.1",
+    "@prisma/client": "^6.11.1",
     "dompurify": "^3.2.6",
     "emoji-picker-react": "^4.12.3",
     "lucide-react": "^0.525.0",
@@ -28,7 +28,7 @@
     "daisyui": "^5.0.43",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
-    "prisma": "^6.10.1",
+    "prisma": "^6.11.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
