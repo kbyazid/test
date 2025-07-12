@@ -1,222 +1,111 @@
-"use client";
-
-import { useParams } from "next/navigation";
+import { PrismaClient } from "@/app/generated/prisma";
 import Wrapper from "@/app/components/Wrapper";
-import React, { useEffect, useState, useCallback } from "react";
-import { Send, Trash } from "lucide-react";
-import { Budget } from "@/type";
-import { getTransactionsByBudgetId, deleteTransaction } from "@/action";
-import Notification, { NotificationType, NotificationPosition } from "@/app/components/Notification";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import {  Transaction } from "@/type";
 
-interface NotificationDetails {
-  message: string;
-  type: NotificationType;
-  position: NotificationPosition;
+interface BudgetDetailsPageProps {
+  params: Promise<{ budgetId: string }>; // Mise à jour pour indiquer que params est une Promise
 }
 
-const BudgetDetailPage = () => {
-  const { budgetId } = useParams<{ budgetId: string }>(); // Typage explicite pour garantir que budgetId est un string
-  const [budget, setBudget] = useState<Budget | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
-  const [notification, setNotification] = useState<NotificationDetails | null>(null);
+const prisma = new PrismaClient();
 
-  const showNotification = useCallback(
-    (message: string, type: NotificationType, position: NotificationPosition) => {
-      setNotification({ message, type, position });
-      setTimeout(() => setNotification(null), 3000); // Auto-dismiss after 3s
-    },
-    []
-  );
+async function getBudgetAndTransactions(budgetId: string) {
+  try {
+    const budget = await prisma.budget.findUnique({
+      where: { id: budgetId },
+      include: { transaction: true },
+    });
 
-  const handleCloseNotification = () => {
-    setNotification(null);
-  };
-
-  const fetchBudgeTran = async (budgetId: string) => {
-    try {
-      setLoading(true);
-      const budgetData = await getTransactionsByBudgetId(budgetId, "tlemcencrma20@gmail.com");
-      setBudget(budgetData);
-    } catch (error) {
-      showNotification(
-        error instanceof Error ? error.message : "Erreur lors du chargement du budget",
-        "error",
-        "top-center"
-      );
-    } finally {
-      setLoading(false);
+    if (!budget) {
+      return null;
     }
-  };
 
-  /* const fetchBudgetData = async (budgetId: string) => {
-    try {
-      setLoading(true);
-      const budgetData = await getTransactionsByBudgetId(budgetId);
-      setBudget(budgetData);
-    } catch (error) {
-      showNotification(
-        error instanceof Error ? error.message : "Erreur lors du chargement du budget",
-        "error",
-        "top-center"
-      );
-    } finally {
-      setLoading(false);
-    }
-  }; */
+    const transactions = await prisma.transaction.findMany({
+      where: { budgetId },
+      orderBy: { createdAt: "desc" },
+    });
 
-  const handleDeleteTransaction = async () => {
-    if (!transactionToDelete) return;
+    return { budget, transactions };
+  } catch (error) {
+    console.error("Erreur lors de la récupération du budget et des transactions :", error);
+    return null;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
 
-    try {
-      await deleteTransaction(transactionToDelete);
-      await fetchBudgeTran(budgetId);
-      setTransactionToDelete(null);
-      showNotification("Transaction supprimée avec succès", "success", "bottom-center");
-      (document.getElementById("delete_transaction_modal") as HTMLDialogElement)?.close();
-    } catch (error) {
-      showNotification(
-        error instanceof Error ? error.message : "Erreur lors de la suppression",
-        "error",
-        "top-center"
-      );
-    }
-  };
+export default async function BudgetDetailsPage({ params }: BudgetDetailsPageProps) {
+  const { budgetId } = await params; // Attendre params pour résoudre le paramètre de la route dynamique
 
-  useEffect(() => {
-    if (!budgetId) {
-      showNotification("Erreur : ID du budget non trouvé", "error", "top-center");
-      return;
-    }
-    fetchBudgeTran(budgetId); 
-    showNotification(`Info : ID du budget : ${budgetId}`, "info", "top-center")
-   
-      return;
-  }, [budgetId]);
+  const data = await getBudgetAndTransactions(budgetId);
 
-  if (!budgetId) {
+  if (!data || !data.budget) {
     return (
       <Wrapper>
-        <div className="flex flex-col justify-center items-center h-64 text-center">
-          <span className="text-red-500 text-xl">Erreur : ID du budget non trouvé.</span>
+        <div className="text-center py-10">
+          <p className="text-red-500">Budget non trouvé.</p>
+          <Link href="/budget" className="btn btn-accent mt-4">
+            Retour aux budgets
+          </Link>
         </div>
       </Wrapper>
     );
   }
 
+  const { budget, transactions } = data;
+
   return (
     <Wrapper>
-      {notification && (
-        <Notification
-          message={notification.message}
-          onclose={handleCloseNotification}
-          type={notification.type}
-          position={notification.position}
-        />
-      )}
-
-      {/* Modal de suppression */}
-      <dialog id="delete_transaction_modal" className="modal" aria-labelledby="delete-modal-title">
-        <div className="modal-box">
-          <form method="dialog">
-            <button
-              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-              aria-label="Fermer la modale"
-            >
-              ✕
-            </button>
-          </form>
-          <h3 id="delete-modal-title" className="font-bold text-lg">Confirmation de suppression</h3>
-          <p className="py-4">Êtes-vous sûr de vouloir supprimer cette transaction ?</p>
-          <div className="flex justify-end gap-4">
-            <button
-              className="btn btn-ghost"
-              onClick={() => {
-                setTransactionToDelete(null);
-                (document.getElementById("delete_transaction_modal") as HTMLDialogElement)?.close();
-              }}
-              aria-label="Annuler la suppression"
-            >
-              Annuler
-            </button>
-            <button
-              className="btn btn-error"
-              onClick={handleDeleteTransaction}
-              aria-label="Confirmer la suppression"
-            >
-              Supprimer
-            </button>
-          </div>
-        </div>
-      </dialog>
-
-      {/* Contenu principal */}
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight">Détails du budget : {budget?.name || "Chargement..."}</h1>
-        {loading ? (
-          <div className="flex justify-center items-center py-10">
-            <span className="loading loading-spinner loading-lg text-accent"></span>
-            <span className="ml-4 font-bold text-accent">Chargement...</span>
-          </div>
-        ) : budget?.transaction && budget.transaction.length > 0 ? (
-          <div className="md:mt-0 mt-4 md:w-2/3 mx-2">
-            <div className="overflow-x-auto space-y-4 flex flex-col">
-              <table className="table table-zebra">
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Montant</th>
-                    <th>Description</th>
-                    <th>Date</th>
-                    <th>Heure</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {budget.transaction.map((transaction) => (
-                    <tr key={transaction.id}>
-                      <td className="text-lg md:text-3xl">{transaction.emoji || "💸"}</td>
-                      <td>
-                        <div className="badge badge-accent badge-xs md:badge-sm">
-                          - {transaction.amount} Da
-                        </div>
-                      </td>
-                      <td>{transaction.description}</td>
-                      <td>{transaction.createdAt.toLocaleDateString("fr-FR")}</td>
-                      <td>
-                        {transaction.createdAt.toLocaleTimeString("fr-FR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          second: "2-digit",
-                        })}
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => {
-                            setTransactionToDelete(transaction.id);
-                            (document.getElementById("delete_transaction_modal") as HTMLDialogElement)?.showModal();
-                          }}
-                          className="btn btn-sm btn-error"
-                          aria-label={`Supprimer la transaction ${transaction.description}`}
-                        >
-                          <Trash className="w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : (
-          <div className="md:w-2/3 mt-10 md:ml-4 flex items-center justify-center">
-            <Send strokeWidth={1.5} className="w-8 h-8 text-accent" />
-            <span className="text-gray-500 ml-2">Aucune transaction.</span>
-          </div>
-        )}
+      <div className="mb-6">
+        <Link href="/budget" className="btn btn-ghost mb-4">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Link>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {budget.emoji} {budget.name}
+        </h1>
+        <p className="text-muted-foreground">
+          Montant total : {budget.amount.toFixed(2)} €
+        </p>
+        <p className="text-muted-foreground">
+          Dépenses :{" "}
+          {(budget.transaction?.reduce((sum, t) => sum + t.amount, 0) || 0).toFixed(2)} €
+        </p>
       </div>
+
+      <h2 className="text-xl font-semibold mb-4">Transactions</h2>
+      {transactions.length === 0 ? (
+        <div className="text-center py-10">
+          <p className="text-gray-500">Aucune transaction pour ce budget.</p>
+        </div>
+      ) : (
+        <ul className="space-y-4">
+          {transactions.map((transaction: Transaction) => (
+            <li
+              key={transaction.id}
+              className="p-4 bg-base-200 rounded-lg shadow flex justify-between items-center"
+            >
+              <div>
+                <span className="text-lg">{transaction.emoji || "💸"}</span>{" "}
+                <span className="font-medium">{transaction.description}</span>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(transaction.createdAt).toLocaleDateString()} -{" "}
+                  {transaction.type === "income" ? "Revenu" : "Dépense"}
+                </p>
+              </div>
+              <span
+                className={
+                  transaction.type === "income" ? "text-green-500" : "text-red-500"
+                }
+              >
+                {transaction.type === "income" ? "+" : "-"}
+                {transaction.amount.toFixed(2)} €
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </Wrapper>
   );
-};
-
-export default BudgetDetailPage;
+}
