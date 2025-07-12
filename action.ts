@@ -3,6 +3,11 @@ import { Prisma } from "@prisma/client/extension";
 import { Budget, Transaction } from "./type";
 import prisma from "@/lib/prisma";
 
+
+/**
+ * Retrieves all test messages from the database.
+ * @returns A promise resolving to an array of test messages.
+ */
 export async function getAllMessages() {
     return await prisma.test_connection.findMany({
       select: {
@@ -12,7 +17,10 @@ export async function getAllMessages() {
     });
   }
 /* ======================================================================= */
-
+/**
+ * Retrieves all users from the database.
+ * @returns A promise resolving to an array of users.
+ */
 export async function getAllUsers() {
   return await prisma.user.findMany({
     select: {
@@ -23,6 +31,7 @@ export async function getAllUsers() {
 }
 
 /* ======================================================================= */
+
 export async function getAllTransactions() {
   return await prisma.transaction.findMany({
     select: {
@@ -332,6 +341,12 @@ export async function addIncomeTransaction(
 }
 
 /* ======================================================================= */
+/**
+ * Deletes a transaction by ID.
+ * @param transactionId - The ID of the transaction to delete.
+ * @returns A promise resolving when the transaction is deleted.
+ * @throws Error if the transaction is not found or the ID is invalid.
+ */
 export async function deleteTransaction(transactionId: string) {
  
   try {
@@ -434,6 +449,15 @@ export async function getTransactionsByPeriod(email:string , period: string) {
 }
 
 /* ======================================================================= */
+/**
+ * Adds a new budget for a user.
+ * @param email - The user's email address.
+ * @param name - The name of the budget.
+ * @param amount - The budget amount.
+ * @param emoji - The optional emoji for the budget.
+ * @returns A promise resolving when the budget is created.
+ * @throws Error if the user is not found or the input is invalid.
+ */
 export async function addBudget(email = "tlemcencrma20@gmail.com", name: string, amount: number, selectedEmoji: string) {
   try {
       const user = await prisma.user.findUnique({
@@ -459,6 +483,12 @@ export async function addBudget(email = "tlemcencrma20@gmail.com", name: string,
   }
 }
 /* ======================================================================= */
+/**
+ * Deletes a budget by ID and its associated transactions.
+ * @param budgetId - The ID of the budget to delete.
+ * @returns A promise resolving when the budget and its transactions are deleted.
+ * @throws Error if the budget is not found or the ID is invalid.
+ */
 export const deleteBudget = async (budgetId: string) => {
   try {
       // Validation des données
@@ -475,11 +505,11 @@ export const deleteBudget = async (budgetId: string) => {
           throw new Error('Budget non trouvée.');
       }
 
-      // Appel à Prisma
+      // Supprimer les transactions associées
       await prisma.transaction.deleteMany({
           where: { budgetId }
       })
-
+       // Supprimer le budget
       await prisma.budget.delete({
           where: {
               id: budgetId,
