@@ -41,6 +41,7 @@ export default function AddTransactionButton({ budgetId, onAddSuccess, email }: 
       setAmount("");
       setDescription("");
     } catch (error) {
+      console.log(error)  
       showNotification("Vous avez dépassé votre budget", "warning", "top-center");
     }
   }, [budgetId, email, description, amount, onAddSuccess]);
