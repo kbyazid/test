@@ -62,6 +62,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Link>
+
         <h1 className="text-2xl font-bold tracking-tight">
           {budget.emoji} {budget.name}
         </h1>
