@@ -15,7 +15,7 @@ export function cn(...inputs: ClassValue[]) {
 
  export function formatCurrency(
   amount: number,
-  currency: string = "DA",
+  currency: string = "Da",
   decimals: number = 2
 ): string {
   // Gestion des valeurs non numériques

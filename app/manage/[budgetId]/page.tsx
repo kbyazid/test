@@ -7,6 +7,7 @@ import BudgetItemPrct from "@/app/components/BudgetItemPrct";
 import DeleteTransactionButton from "@/app/components/DeleteTransactionButton";
 import { revalidatePath } from "next/cache";
 import AddTransactionButton from "@/app/components/AddTransactionButton";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 interface BudgetDetailsPageProps {
   params: Promise<{ budgetId: string }>; // Mise à jour pour indiquer que params est une Promise
@@ -137,14 +138,23 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
         </ul> */
         <table className="table table-zebra ">
                   <thead>
-                    <tr>
+                    {/* <tr>
                       <th></th>
                       <th>Montant</th>
                       <th>Description</th>
                       <th>Date</th>
                       <th>Heure</th>
                       <th>Action</th>
-                    </tr>
+                    </tr> */}
+                    <tr>
+                    <th></th>
+                      <th className="text-left">Montant</th>
+                      <th>Description</th>
+		                  <th className="md:hidden text-left px-2 py-3">Date/Heure</th>
+                      <th className="hidden md:table-cell">Date</th>
+                      <th className="hidden md:table-cell">Heure</th>
+                      <th className="text-center hidden md:table-cell">Actions</th>
+                      </tr>
                   </thead>
                   <tbody>
                     {budget?.transaction?.map((transaction: Transaction) => (
@@ -152,26 +162,49 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                         <td className='text-lg md:text-3xl'>{transaction.emoji}</td>
                         <td>
                           <div className="badge badge-accent badge-xs md:badge-sm">
-                            - {transaction.amount} Da</div>
+                            - {formatCurrency(transaction.amount)}{/* {transaction.amount} Da */}</div>
                         </td>
                         <td>{transaction.description}</td>
-                        <td>
+
+
+                        <td className='hidden md:table-cell text-center p-2 md:p-4'>
                           {transaction.createdAt.toLocaleDateString("fr-FR")}
                         </td>
-                        <td>
+                        <td className='hidden md:table-cell text-center p-2 md:p-4'>
                           {transaction.createdAt.toLocaleTimeString("fr-FR", {
                             hour: "2-digit",
                             minute: "2-digit",
                             second: "2-digit"
                           })}
                         </td>
-                        <td>
-                        {transaction.type === "expense" && (
+
+                        <td className="md:hidden px-2 py-3">
+                          <div className='flex flex-col items-start'>
+                            <span className='text-xs mb-1'>
+                              {formatDate(transaction.createdAt, { withTime: true })}
+                            </span>
+                            <div className='flex items-center gap-2 mt-2'>
+                              {transaction.type === "expense" && (
+                                <DeleteTransactionButton
+                                  transactionId={transaction.id}
+                                  onDeleteSuccess={handleTransactionChange}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+
+
+                        <td className='hidden md:table-cell text-center p-2 md:p-4'>
+                          <div className="flex items-center justify-center gap-2">
+                           {transaction.type === "expense" && (
                           <DeleteTransactionButton
                             transactionId={transaction.id}
                             onDeleteSuccess={handleTransactionChange}
                           />
                         )}
+                          </div>                       
                         </td>
                       </tr>
                     ))}

@@ -1,4 +1,5 @@
 import { Budget } from "@/type"
+import { formatCurrency} from '@/lib/utils'
 
 interface BudgetItemProps {
     budget: Budget;
@@ -54,7 +55,7 @@ const BudgetItemPrct = ({ budget, enableHover }: BudgetItemProps) => {
                 {/* <div className="text-xl font-bold text-accent">{budget.amount} Da</div> */}
                 <div className="flex items-center">
                     <div className="flex flex-col ml-3">
-                        <span className="text-xl font-bold text-accent">{budget.amount} Da</span>
+                        <span className="font-bold text-green-600">{formatCurrency(budget.amount)}{/* {budget.amount} Da */}</span>
                         <span className={getPercentageClass(percentage)}>
                             {percentage}%
                         </span>
@@ -65,9 +66,9 @@ const BudgetItemPrct = ({ budget, enableHover }: BudgetItemProps) => {
                     </div>
                 </div>
             </div>
-            <div className="flex justify-between items-center mt-4 text-gray-500 text-sm">
-                <span className={getDepenseColor(percentage)}>{totalTransactionAmount} Da dépensés</span>
-                <span>{remainingAmount} Da restants</span>
+            <div className="flex justify-between items-center mt-4 text-gray-400 text-sm">
+                <span className={getDepenseColor(percentage)}>{formatCurrency(totalTransactionAmount)}{/* {totalTransactionAmount} Da */} dépensés</span>
+                <span>{formatCurrency(remainingAmount)}{/* {remainingAmount} Da */} restants</span>
             </div>
 
             <div>

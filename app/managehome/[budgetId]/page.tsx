@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Send } from "lucide-react";
 import {  Transaction } from "@/type";
 import BudgetItemPrct from "@/app/components/BudgetItemPrct";
+import { formatCurrency } from '@/lib/utils'
 
 interface BudgetDetailsPageProps {
   params: Promise<{ budgetId: string }>; // Mise à jour pour indiquer que params est une Promise
@@ -127,7 +128,8 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                 }
               >
                 {transaction.type === "income" ? "+" : "-"}
-                {transaction.amount.toFixed(2)} €
+                {formatCurrency(transaction.amount)}
+                {/* {transaction.amount.toFixed(2)} Da */}
               </span>
             </li>
           ))}
