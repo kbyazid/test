@@ -41,7 +41,7 @@ const Navbar = () => {
                   <Link href={"/budget"} className="btn btn-sm">
                     Mes budjets
                   </Link>
-                  <Link href={"/"} className="btn btn-sm">
+                  <Link href={"/dashboard"} className="btn btn-sm">
                     Tableau de bord
                   </Link>
                   <Link href={"/transaction"} className="btn btn-sm">
@@ -123,7 +123,7 @@ const Navbar = () => {
                   Mes budjets
                 </Link>
                 <Link
-                  href={"/"}
+                  href={"/dashboard"}
                   className="btn btn-sm w-full"
                   onClick={toggleMenu}
                 >

@@ -603,3 +603,224 @@ export const deleteBudget = async (budgetId: string) => {
   } 
 
 }
+
+
+//********************************************************************/
+// Dashboard
+export async function getTotalTransactionAmount(email="tlemcencrma20@gmail.com") {
+  try {
+      const user = await prisma.user.findUnique({
+          where: { email },
+          include: {
+              budget: {
+                  include: {
+                      transaction: true
+                  }
+              }
+          }
+      })
+
+      if (!user) throw new Error("Utilisateur non trouvé");
+
+      const totalAmount = user.budget.reduce((sum, budgets) => {
+          return sum + budgets.transaction.reduce((budjeSum, transaction) => budjeSum + transaction.amount, 0)
+      }, 0)
+
+      return totalAmount
+
+  } catch (error) {
+      console.error("Erreur lors du calcul du montant total des transactions:", error);
+      throw error;
+  }
+}
+
+/* 1. Nombre de transactions : */
+export const getTransactionCount = async (email="tlemcencrma20@gmail.com") => {
+const user = await prisma.user.findUnique({
+  where: { email },
+  include: {
+    budget: {
+      include: {
+        transaction: true,
+      },
+    },
+  },
+});
+
+if (!user) throw new Error("Utilisateur non trouvé");
+
+const count = user.budget.reduce((total, budget) => {
+  return total + budget.transaction.length;
+}, 0);
+
+return count;
+};
+
+/* 2. Nombre de budgets :  */
+export const getBudgetCount = async (email="tlemcencrma20@gmail.com") => {
+const count = await prisma.budget.count({
+  where: { user: { email } },
+});
+return count;
+};
+
+/* 3. Montant total des budgets :  */
+export const getTotalBudgetAmount = async (email="tlemcencrma20@gmail.com") => {
+const budgets = await prisma.budget.findMany({
+  where: { user: { email } },
+});
+
+const total = budgets.reduce((sum, budget) => sum + (budget.amount || 0), 0);
+return total;
+};
+
+export async function getTotalTransactionCount(email="tlemcencrma20@gmail.com") {
+  try {
+      const user = await prisma.user.findUnique({
+          where: { email },
+          include: {
+              budget: {
+                  include: {
+                      transaction: true
+                  }
+              }
+          }
+      })
+
+      if (!user) throw new Error("Utilisateur non trouvé");
+
+      const totalCount = user.budget.reduce((count, budget) => {
+          return count + budget.transaction.length
+      }, 0)
+
+      return totalCount
+  } catch (error) {
+      console.error("Erreur lors du comptage des transactions:", error);
+      throw error;
+  }
+
+}
+
+
+export async function getReachedBudgets(email="tlemcencrma20@gmail.com") {
+  try {
+      const user = await prisma.user.findUnique({
+          where: { email },
+          include: {
+              budget: {
+                  include: {
+                      transaction: true
+                  }
+              }
+          }
+      })
+
+      if (!user) throw new Error("Utilisateur non trouvé");
+
+      const totalBudgets = user.budget.length;
+      const reachedBudgets = user.budget.filter(budjet => {
+          const totalTransactionsAmount = budjet.transaction.
+              reduce((sum, transaction) => sum + transaction.amount, 0)
+          return totalTransactionsAmount >= budjet.amount
+      }).length
+
+      return `${reachedBudgets}/${totalBudgets}`
+  } catch (error) {
+      console.error("Erreur lors du calcul des budgets atteints:", error);
+      throw error;
+  }
+
+}
+
+export async function getUserBudgetData(email="tlemcencrma20@gmail.com") {
+  try {
+
+      const user = await prisma.user.findUnique({
+          where: { email },
+          include: { budget: { include: { transaction: true } } },
+      });
+
+      if (!user) {
+          throw new Error("Utilisateur non trouvé.");
+      }
+
+      const data = user.budget.map(budget => {
+          const totalTransactionsAmount = budget.transaction.reduce( (sum , transaction) => sum + transaction.amount ,0)
+          return {
+              budgetName: budget.name,
+              totalBudgetAmount : budget.amount,
+              totalTransactionsAmount
+          }
+      })
+      
+      return data
+
+  } catch (error) {
+      console.error("Erreur lors de la récupération des données budgétaires:", error);
+      throw error;
+  }
+}
+
+export const getLastTransactions = async (email="tlemcencrma20@gmail.com") => {
+  try {
+      const transactions = await prisma.transaction.findMany({
+          where : {
+              budget : {
+                  user: {
+                     email : email 
+                  }
+              }
+          },
+          orderBy : {
+              createdAt: 'desc',
+          },
+          take: 10 , 
+          include: {
+              budget : {
+                  select: {
+                      name : true
+                  }
+              }
+          }
+
+      })
+
+      const transactionsWithBudgetName = transactions.map(transaction => ({
+          ...transaction,
+          budgetName: transaction.budget?.name || 'N/A', 
+      }));
+
+
+      return transactionsWithBudgetName
+
+  } catch (error) {
+      console.error('Erreur lors de la récupération des dernières transactions: ', error);
+      throw error;
+  }
+}
+
+export const getLastBudgets = async (email="tlemcencrma20@gmail.com") => {
+  try {
+       const  budgets = await prisma.budget.findMany({
+          where : {
+              user : {
+                  email
+              }
+          },
+          orderBy: {
+              createdAt: 'desc',
+          },
+          take : 3,
+          include: {
+              transaction: true
+          }
+
+       })
+
+       return budgets
+
+  } catch (error) {
+      console.error('Erreur lors de la récupération des derniers budgets: ', error);
+      throw error;
+  }
+}
