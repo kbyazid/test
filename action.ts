@@ -341,6 +341,87 @@ export async function addIncomeTransaction(
 }
 
 /* ======================================================================= */
+export async function addExpenseTransactionToBudget(
+  budgetId: string,
+  amount: number,
+  description: string,
+  email: string,
+) {
+  /* Bloc try catch  */
+  try {
+      
+  /*  console.log(email) */
+  /*  Fonction de depense type =  'expense' */
+      const type =  'expense'
+
+  // recherche user ds notre table local user
+      const user = await prisma.user.findUnique({
+          where: { email }
+      })
+
+      if (!user) {
+          throw new Error('Utilisateur non trouvé')
+      } 
+
+  // Get budget with all his transactions
+      const budget = await prisma.budget.findUnique({
+          where: {
+              id: budgetId
+          },
+          include: {
+              transaction: true
+          }
+      })
+
+      if (!budget) {
+          throw new Error('Budget non trouvé.');
+      }
+  // totaliser le total pour savoir si on va depasser le budget
+      const totalTransactions = budget.transaction.reduce((sum, transaction) => {
+          return sum + transaction.amount
+      }, 0)
+
+      const totalWithNewTransaction = totalTransactions + amount
+
+      if (totalWithNewTransaction > budget.amount) {
+          throw new Error('Le montant total des transactions dépasse le montant du budget.');
+      }
+
+      const capitalized = description.charAt(0).toUpperCase()+ description.slice(1)
+      description = capitalized
+
+      const newTransaction = await prisma.transaction.create({
+          data: {
+              amount,
+              description,
+              emoji: budget.emoji,
+              type:type, 
+              userId: user.id,
+              budgetId:budgetId,
+          }
+      })   
+      
+      /* Deux maniere differantes d enregistrer cette derniere genere une erreur */
+      /* const newTransaction = await prisma.transaction.create({
+          data: {
+              amount,
+              description,
+              emoji: budget.emoji,
+              type:type, 
+              userId: user.id,
+              budget: {
+                  connect: {id: budget.id }
+              }
+          }
+      }) */
+
+  } catch (error) {
+      console.error('Erreur lors de l\'ajout de la transaction:', error);
+      throw error;
+  }
+}
+
+/* ======================================================================= */
 /**
  * Deletes a transaction by ID.
  * @param transactionId - The ID of the transaction to delete.

@@ -47,7 +47,7 @@ const TransactionPage = () => {
   const [totals, setTotals] = useState<Totals | null>(null)
   const [notification, setNotification] = useState<NotificationDetails | null>(null)  
   const [searchQuery, setSearchQuery] = useState("")
-  const [currentPeriod, setCurrentPeriod] = useState<Period>('last30')
+  const [currentPeriod, setCurrentPeriod] = useState<Period>('all')
 
   // Fonctions utilitaires
  

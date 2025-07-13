@@ -4,6 +4,9 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Transaction } from "@/type";
 import BudgetItemPrct from "@/app/components/BudgetItemPrct";
+import DeleteTransactionButton from "@/app/components/DeleteTransactionButton";
+import { revalidatePath } from "next/cache";
+import AddTransactionButton from "@/app/components/AddTransactionButton";
 
 interface BudgetDetailsPageProps {
   params: Promise<{ budgetId: string }>; // Mise à jour pour indiquer que params est une Promise
@@ -56,6 +59,18 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
 
   const { budget, transactions } = data;
 
+    // Fonction pour revalider le cache après suppression ou ajout
+    async function handleTransactionChange() {
+      "use server";
+      revalidatePath(`/manage/${budgetId}`);
+    }
+  
+  // Fonction pour revalider le cache après suppression
+/*   async function handleDeleteSuccess() {
+    "use server";
+    revalidatePath(`/manage/${budgetId}`);
+  } */
+
   return (
     <Wrapper>
       <div className="mb-6">
@@ -63,9 +78,19 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Link>
-        <div className='md:w-1/3'>
-        <BudgetItemPrct budget={budget} enableHover={0} depenseColor='text-red-500 font-bold' />
+        <div className="flex flex-col md:flex-row gap-4 mt-4  ">
+          <div className="flex-1">
+            <BudgetItemPrct budget={budget} enableHover={1} />
+          </div>
+          <AddTransactionButton
+            budgetId={budgetId}
+            onAddSuccess={handleTransactionChange}
+            email="tlemcencrma20@gmail.com"
+          />
         </div>
+{/*         <div className='md:w-1/3'>
+        <BudgetItemPrct budget={budget} enableHover={0} depenseColor='text-red-500 font-bold' />
+        </div> */}
         
 {/*         <h1 className="text-2xl font-bold tracking-tight">
           {budget.emoji} {budget.name}
@@ -139,6 +164,14 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                             minute: "2-digit",
                             second: "2-digit"
                           })}
+                        </td>
+                        <td>
+                        {transaction.type === "expense" && (
+                          <DeleteTransactionButton
+                            transactionId={transaction.id}
+                            onDeleteSuccess={handleTransactionChange}
+                          />
+                        )}
                         </td>
                       </tr>
                     ))}
