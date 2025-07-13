@@ -71,6 +71,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
           </div>
           {budget?.transaction && budget.transaction.length > 0 ? (
             <div className="md:mt-0 mt-4 md:w-2/3 mx-2">
+            <h2 className="text-xl font-semibold mb-4">Transactions</h2>
               <div className="overflow-x-auto space-y-4 flex flex-col">
                 {/* <table className="table table-zebra ">
                   <thead>
@@ -136,8 +137,9 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
           ) : (
             <div className='md:w-2/3 mt-10 md:ml-4 flex items-center justify-center'>
               <Send strokeWidth={1.5} className='w-8 h-8 text-accent' />
-              <span className='text-gray-500 ml-2'>aucune transaction.</span>
+              <span className='text-gray-500 tracking-tight ml-2'>Aucune transaction pour ce budget.</span>
             </div>
+            
           )}
         </div>
       )}

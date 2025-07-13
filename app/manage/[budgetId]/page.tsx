@@ -2,7 +2,8 @@ import { PrismaClient } from "@/app/generated/prisma";
 import Wrapper from "@/app/components/Wrapper";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import {  Transaction } from "@/type";
+import { Transaction } from "@/type";
+import BudgetItemPrct from "@/app/components/BudgetItemPrct";
 
 interface BudgetDetailsPageProps {
   params: Promise<{ budgetId: string }>; // Mise à jour pour indiquer que params est une Promise
@@ -62,8 +63,11 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Link>
-
-        <h1 className="text-2xl font-bold tracking-tight">
+        <div className='md:w-1/3'>
+        <BudgetItemPrct budget={budget} enableHover={0} depenseColor='text-red-500 font-bold' />
+        </div>
+        
+{/*         <h1 className="text-2xl font-bold tracking-tight">
           {budget.emoji} {budget.name}
         </h1>
         <p className="text-muted-foreground">
@@ -72,7 +76,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
         <p className="text-muted-foreground">
           Dépenses :{" "}
           {(budget.transaction?.reduce((sum, t) => sum + t.amount, 0) || 0).toFixed(2)} €
-        </p>
+        </p> */}
       </div>
 
       <h2 className="text-xl font-semibold mb-4">Transactions</h2>
@@ -81,7 +85,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
           <p className="text-gray-500">Aucune transaction pour ce budget.</p>
         </div>
       ) : (
-        <ul className="space-y-4">
+ /*        <ul className="space-y-4">
           {transactions.map((transaction: Transaction) => (
             <li
               key={transaction.id}
@@ -105,7 +109,41 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
               </span>
             </li>
           ))}
-        </ul>
+        </ul> */
+        <table className="table table-zebra ">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Montant</th>
+                      <th>Description</th>
+                      <th>Date</th>
+                      <th>Heure</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {budget?.transaction?.map((transaction: Transaction) => (
+                      <tr key={transaction.id}>
+                        <td className='text-lg md:text-3xl'>{transaction.emoji}</td>
+                        <td>
+                          <div className="badge badge-accent badge-xs md:badge-sm">
+                            - {transaction.amount} Da</div>
+                        </td>
+                        <td>{transaction.description}</td>
+                        <td>
+                          {transaction.createdAt.toLocaleDateString("fr-FR")}
+                        </td>
+                        <td>
+                          {transaction.createdAt.toLocaleTimeString("fr-FR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit"
+                          })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table> 
       )}
     </Wrapper>
   );
