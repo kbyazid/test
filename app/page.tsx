@@ -1,33 +1,8 @@
 // app/page.tsx
 // Suppression de "use client"; - Cette page est maintenant un Server Component
-
-import BudgetItemPrct from "./components/BudgetItemPrct"; // Supposons que c'est un Client Component ou un Server Component qui n'utilise pas Link directement
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { getBudgetsByUser } from "../app/data/data"; // Type Budget
-
+import { BudgetList } from "./components/BudgetList";
 import Wrapper from "./components/Wrapper"; // Supposons que c'est un Client/Server Component
 import { Suspense } from "react"; // Importez Suspense
-
-// Composant Client pour envelopper Next.js Link
-// (Créez ce fichier dans components/ClientLink.tsx)
-import ClientLink from "./components/ClientLink";
-
-// Nouveau Server Component pour afficher la liste des budgets
-// Cela pourrait être dans un fichier séparé comme components/BudgetList.tsx
-async function BudgetList() {
-  const userBudgets = await getBudgetsByUser("tlemcencrma20@gmail.com"); // Appel asynchrone des données
-
-  return (
-    <ul className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-      {userBudgets.map((budget) => (
-        // Utilisez le composant ClientLink pour envelopper Link
-        <ClientLink href={`/managehome/${budget.id}`} key={budget.id}>
-          <BudgetItemPrct budget={budget} enableHover={1} />
-        </ClientLink>
-      ))}
-    </ul>
-  );
-}
 
 // Composant de Page (maintenant un Server Component)
 export default function Home() {
