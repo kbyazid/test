@@ -20,9 +20,12 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
         return (
             <Wrapper>
                 <div className="text-center py-10">
-                    <p className="text-red-500">Budget non trouvé.</p>
-                    <ClientLink href="/budget" className="btn btn-accent mt-4">
-                        Retour aux budgets
+                    <p className="text-red-500 text-3xl text-bold">Budget non trouvé.</p>
+                    <ClientLink href="/" >
+                    <div className="btn btn-accent mb-4 mt-4">
+                        <ArrowLeft className="w-4 h-4 mr-2 " /> Retour aux budgets
+                    </div>       
+                        
                     </ClientLink>
                 </div>
             </Wrapper>
@@ -34,11 +37,13 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
     return (
         <Wrapper>
             <div className="mb-6">
-                <ClientLink href="/" className="btn btn-ghost mb-4">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Retour
+            
+                <ClientLink href="/">
+                    <div className="btn btn-ghost mb-4">
+                        <ArrowLeft className="w-4 h-4 mr-2" /> Retour
+                    </div>                   
                 </ClientLink>
-
+                
                 {budget && (
                     <div className='flex md:flex-row flex-col'>
                         <div className='md:w-1/3'>
@@ -58,7 +63,11 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                                                     <span className="text-lg">{transaction.emoji || "💸"}</span>{" "}
                                                     <span className="font-medium">{transaction.description}</span>
                                                     <p className="text-sm text-muted-foreground">
-                                                        {new Date(transaction.createdAt).toLocaleDateString()} -{" "}
+                                                        {new Date(transaction.createdAt).toLocaleDateString('fr-FR', {
+                                                            day: '2-digit',   // Jour sur 2 chiffres (ex: 01, 15)
+                                                            month: '2-digit', // Mois sur 2 chiffres (ex: 01, 12)
+                                                            year: 'numeric'   // Année sur 4 chiffres (ex: 2023)
+                                                        })} -{" "}
                                                         {transaction.type === "income" ? "Revenu" : "Dépense"}
                                                     </p>
                                                 </div>

@@ -8,7 +8,6 @@ interface ClientLinkProps {
   href: string;
   children: React.ReactNode;
   key?: string | number; // Pour le key dans le map
-  className?: string; // Rendue optionnelle car tous les liens n'ont pas forcément une classe
 }
 
 export default function ClientLink({ href, children, key }: ClientLinkProps) {
