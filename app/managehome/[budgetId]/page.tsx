@@ -14,9 +14,29 @@ interface BudgetDetailsPageProps {
 export default async function BudgetDetailsPage({ params }: BudgetDetailsPageProps) {
     const { budgetId } = await params; // Attendre params pour résoudre le paramètre de la route dynamique
 
-    const data = await getBudgetAndTransactions(budgetId);
-
-    if (!data || !data.budget) {
+    const result = await getBudgetAndTransactions(budgetId);
+    /* console.log(data) */
+    // Gérer les erreurs de récupération de données
+  if (result.error) {
+    return (
+      <Wrapper>
+        <div className="text-center py-10">
+          <p className="text-red-500 text-lg font-semibold">{result.error}</p>
+          {result.error.includes("base de données") && (
+              <p className="mt-2 text-sm text-gray-600">Veuillez vérifier l&aposétat du serveur de base de données.</p>
+          )}
+          {/* Si le budget n'est pas trouvé ou s'il y a une erreur DB, on propose de revenir à l'accueil */}
+          <div className="btn btn-accent mt-4">
+            <ClientLink href="/" >
+            Retour à l&apos;accueil
+          </ClientLink>
+          </div>
+          
+        </div>
+      </Wrapper>
+    );
+  }
+    /* if (!data || !data.budget) {
         return (
             <Wrapper>
                 <div className="text-center py-10">
@@ -30,9 +50,9 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                 </div>
             </Wrapper>
         );
-    }
-
-    const { budget, transactions } = data;
+    } */
+ 
+    const { budget, transactions } = result.data!;
 
     return (
         <Wrapper>

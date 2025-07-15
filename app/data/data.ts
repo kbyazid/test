@@ -1,93 +1,104 @@
 // lib/data.ts
-// Import de Prisma pour la fonction getBudgetsByUser
-import prisma from "@/lib/prisma"; 
-import { Budget, Transaction } from "@/type"; // Importez le type Budget si nécessaire
+import prisma from "@/lib/prisma";
+import { Budget, Transaction } from "@/type";
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientInitializationError,
+  PrismaClientValidationError // Assurez-vous d'importer toutes les erreurs Prisma que vous pourriez vouloir gérer
+} from '@prisma/client/runtime/library';
+
+export type FetchResult<T> = { data: T; error: null } | { data: null; error: string };
 
 interface BudgetWithTransactions extends Budget {
-    transaction: Transaction[];
-  }
-  
-/* ======================================================================= */
-/* utilse ds test\app\components\BudgetList.tsx ds home page  */
-// Fonction pour récupérer les budgets par utilisateur
-export async function getBudgetsByUser(email: string = "tlemcencrma20@gmail.com"): Promise<Budget[]> {
-  // await new Promise(resolve => setTimeout(resolve, 15000)); // Pour tester le Suspense
+  transaction: Transaction[];
+}
 
+export async function getBudgetsByUser(email: string = "tlemcencrma20@gmail.com"): Promise<FetchResult<Budget[]>> {
   try {
     const user = await prisma.user.findUnique({
-      where: {
-        email,
-      },
+      where: { email },
       include: {
         budget: {
-          include: {
-            transaction: true,
-          },
+          include: { transaction: true },
         },
       },
     });
 
     if (!user) {
-      // Vous pouvez choisir de ne pas lancer d'erreur et retourner un tableau vide si l'utilisateur n'est pas trouvé
-      // Ou lancer une erreur pour la gérer plus haut
-      throw new Error("Utilisateur non trouvé");
+      return { data: [], error: null };
     }
-    return user.budget as Budget[]; // Assurez-vous que le type correspond à Budget[]
-  } catch (error) {
+    return { data: user.budget as Budget[], error: null };
+  } catch (error: unknown) { // CORRIGÉ : 'any' remplacé par 'unknown'
     console.error('Erreur lors de la récupération des budgets:', error);
-    // Important: relancer l'erreur pour que le composant appelant puisse la gérer ou que Next.js affiche une page d'erreur
-    throw error;
+
+    // Vérification explicite du type de l'erreur avant d'accéder aux propriétés
+    if (error instanceof PrismaClientInitializationError) {
+      return { data: null, error: "Impossible de se connecter à la base de données. Veuillez réessayer plus tard." };
+    }
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === 'P1001' || error.code === 'P1002') {
+        return { data: null, error: "Impossible de se connecter à la base de données. Veuillez réessayer plus tard." };
+      }
+      // Ajoutez d'autres codes d'erreur Prisma que vous souhaitez gérer spécifiquement
+    }
+    if (error instanceof PrismaClientValidationError) {
+        return { data: null, error: "Erreur de validation des données lors de la récupération des budgets." };
+    }
+    // Si c'est une erreur standard avec un message
+    if (error instanceof Error) {
+        if (error.message.includes("Can't reach database server") ||
+            error.message.includes("Timed out connecting to the database")
+        ) {
+            return { data: null, error: "Impossible de se connecter à la base de données. Veuillez réessayer plus tard." };
+        }
+    }
+
+
+    // Cas par défaut pour toute autre erreur inattendue
+    return { data: null, error: "Une erreur inattendue est survenue lors de la récupération des budgets." };
   }
 }
 
-/* ======================================================================= */
-/* utilse ds   */
-// Fonction pour récupérer le Budget et ces transactions 
-/* export async function getBudgetAndTransactions(budgetId: string) {
-    try {
-      const budget = await prisma.budget.findUnique({
-        where: { id: budgetId },
-        include: { transaction: true },
-      });
-  
-      if (!budget) {
-        return null;
-      }
-  
-      const transactions = await prisma.transaction.findMany({
-        where: { budgetId },
-        orderBy: { createdAt: "desc" },
-      });
-  
-      return { budget, transactions };
-    } catch (error) {
-      console.error("Erreur lors de la récupération du budget et des transactions :", error);
-      return null;
-    }
-  } */
-/* finally {await prisma.$disconnect(); } */
+export async function getBudgetAndTransactions(budgetId: string): Promise<FetchResult<{ budget: BudgetWithTransactions; transactions: Transaction[] }>> {
+  try {
+    const budget = await prisma.budget.findUnique({
+      where: { id: budgetId },
+      include: { transaction: true },
+    });
 
-export async function getBudgetAndTransactions(budgetId: string): Promise<{ budget: BudgetWithTransactions; transactions: Transaction[] } | null> {
-    try {
-      const budget = await prisma.budget.findUnique({
-        where: { id: budgetId },
-        include: { transaction: true }, // Inclure les transactions liées au budget
-      });
-  
-      if (!budget) {
-        return null;
-      }
-  
-      // Récupérer les transactions séparément si nécessaire, ou utiliser celles incluses dans le budget
-      // Si vous voulez toutes les transactions liées à ce budget, l'include ci-dessus est suffisant.
-      // Si vous avez besoin de filtrer/ordonner les transactions différemment, cette deuxième requête peut être utile.
-      // Pour cet exemple, nous allons utiliser les transactions incluses pour simplifier.
-      const transactions = budget.transaction; // Utilise les transactions déjà incluses
-  
-      return { budget: budget as BudgetWithTransactions, transactions };
-    } catch (error) {
-      console.error("Erreur lors de la récupération du budget et des transactions :", error);
-      return null;
+    if (!budget) {
+      return { data: null, error: "Budget non trouvé." };
     }
-    // Pas de prisma.$disconnect() ici, laissé à la gestion du pool de Prisma
+
+    const transactions = budget.transaction;
+
+    return { data: { budget: budget as BudgetWithTransactions, transactions }, error: null };
+  } catch (error: unknown) { // CORRIGÉ : 'any' remplacé par 'unknown'
+    console.error("Erreur lors de la récupération du budget et des transactions :", error);
+
+    // Vérification explicite du type de l'erreur avant d'accéder aux propriétés
+    if (error instanceof PrismaClientInitializationError) {
+        return { data: null, error: "Impossible de se connecter à la base de données pour ce budget. Veuillez réessayer plus tard." };
+    }
+    if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P1001' || error.code === 'P1002') {
+            return { data: null, error: "Impossible de se connecter à la base de données pour ce budget. Veuillez réessayer plus tard." };
+        }
+        // Ajoutez d'autres codes d'erreur Prisma que vous souhaitez gérer spécifiquement
+    }
+    if (error instanceof PrismaClientValidationError) {
+        return { data: null, error: "Erreur de validation des données lors de la récupération du budget." };
+    }
+    // Si c'est une erreur standard avec un message
+    if (error instanceof Error) {
+        if (error.message.includes("Can't reach database server") ||
+            error.message.includes("Timed out connecting to the database")
+        ) {
+            return { data: null, error: "Impossible de se connecter à la base de données pour ce budget. Veuillez réessayer plus tard." };
+        }
+    }
+
+    // Cas par défaut pour toute autre erreur inattendue
+    return { data: null, error: "Une erreur inattendue est survenue lors de la récupération du budget et de ses transactions." };
   }
+}
