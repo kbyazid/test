@@ -59,7 +59,6 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
   }
 
   const { budget, transactions } = data;
-
     // Fonction pour revalider le cache après suppression ou ajout
     async function handleTransactionChange() {
       "use server";

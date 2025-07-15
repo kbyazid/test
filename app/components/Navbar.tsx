@@ -26,7 +26,7 @@ const Navbar = () => {
               {/* Logo */}
               <div className="flex text-2xl items-center font-bold">
                 <Link href={"/"}>
-                  e <span className="text-accent">.Track</span>
+                  e <span className="text-accent">.Tres</span>
                 </Link>
               </div>
 

@@ -692,7 +692,7 @@ export async function getTotalTransactionCount(email="tlemcencrma20@gmail.com") 
       const totalCount = user.budget.reduce((count, budget) => {
           return count + budget.transaction.length
       }, 0)
-
+      console.log("getTotalTransactionCount :", user)
       return totalCount
   } catch (error) {
       console.error("Erreur lors du comptage des transactions:", error);
@@ -752,7 +752,7 @@ export async function getUserBudgetData(email="tlemcencrma20@gmail.com") {
               totalTransactionsAmount
           }
       })
-      
+      console.log("getUserBudgetData :",data)
       return data
 
   } catch (error) {
@@ -790,7 +790,7 @@ export const getLastTransactions = async (email="tlemcencrma20@gmail.com") => {
           budgetName: transaction.budget?.name || 'N/A', 
       }));
 
-
+      console.log("getLastTransactions :", transactionsWithBudgetName)
       return transactionsWithBudgetName
 
   } catch (error) {
@@ -816,7 +816,7 @@ export const getLastBudgets = async (email="tlemcencrma20@gmail.com") => {
           }
 
        })
-
+       console.log("getLastBudgets :",budgets)
        return budgets
 
   } catch (error) {
