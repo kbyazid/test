@@ -6,6 +6,11 @@ export type NotificationType = 'info' | 'success' | 'warning' | 'error'; // 'war
 // Définir les positions possibles du toast
 export type NotificationPosition = 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
 
+export interface NotificationDetails {
+    message: string;
+    type: NotificationType;
+    position: NotificationPosition;
+}
 export  interface NotificationProps {
     message: string;
     onclose: () => void;

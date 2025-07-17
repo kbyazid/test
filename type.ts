@@ -1,3 +1,12 @@
+
+export type Period = 'last7' | 'last30' | 'last90' | 'last365' | 'all';
+
+export type Totals = {
+    balance: number;
+    totalIncome: number;
+    totalExpenses: number;
+};
+
 export interface User {
     id: string;
     email: string;

@@ -1,10 +1,3 @@
-/* import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-} */
-
  /**
  * Formate un montant en devise avec séparateurs
  * @param amount Montant à formater
@@ -32,23 +25,6 @@ export function cn(...inputs: ClassValue[]) {
   return `${formattedAmount} ${currency}`
 }
 
-/* export function formatCurrency(
-  amount: number,
-  currency: string = "DA",
-  decimals: number = 2
-): string {
-  // Gestion des valeurs non numériques
-  if (isNaN(amount)) return `0,00 ${currency}`
-
-  // Formatage avec séparateur de milliers et décimales
-  const formattedAmount = new Intl.NumberFormat('fr-FR', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
-  }).format(amount)
-
-  return `${formattedAmount} ${currency}`
-}
- */
 /**
  * Formate une date selon les options spécifiées
  * @param date Date à formater (string, Date ou timestamp)
@@ -115,3 +91,42 @@ export function formatTableTime(date: string | Date | number): string {
     minute: '2-digit'
   })
 } 
+
+/* export function formatCurrency(
+  amount: number,
+  currency: string = "DA",
+  decimals: number = 2
+): string {
+  // Gestion des valeurs non numériques
+  if (isNaN(amount)) return `0,00 ${currency}`
+
+  // Formatage avec séparateur de milliers et décimales
+  const formattedAmount = new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  }).format(amount)
+
+  return `${formattedAmount} ${currency}`
+}
+ */
+
+// Fonction debounce
+/* export function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
+  let timeout: NodeJS.Timeout;
+  return function(this: any, ...args: Parameters<T>) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), delay);
+  };
+} */
+
+// Pour Shadcn/ui ou équivalent pour fusionner les classes Tailwind
+/* export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+} */
+
+/* import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+} */

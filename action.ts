@@ -3,7 +3,247 @@ import { Prisma } from "@prisma/client/extension";
 import { Budget, Transaction } from "./type";
 import prisma from "@/lib/prisma";
 
+/* =========================================================================== */
+/* contiendra uniquement les fonctions de mutation (qui modifient des données) */
+/* =========================================================================== */
 
+export async function addIncomeTransaction(
+  amount: number,
+  description: string,
+  email: string,
+) {
+  /* Bloc try catch  */
+  try {
+      const type =  'income'
+
+  // recherche user ds notre table local user
+      const user = await prisma.user.findUnique({
+          where: { email }
+      })
+
+      if (!user) {
+          throw new Error('Utilisateur non trouvé')
+      } 
+
+      const capitalized = description.charAt(0).toUpperCase()+ description.slice(1)
+      description = capitalized
+
+      const newTransaction = await prisma.transaction.create({
+          data: {
+              amount,
+              description,
+              emoji: null,
+              type:type, 
+              userId: user.id,
+              budgetId:null,
+          }
+      })   
+      
+
+  } catch (error) {
+      console.error('Erreur lors de l\'ajout de la transaction:', error);
+      throw error;
+  }
+}
+
+/* ======================================================================= */
+export async function addExpenseTransactionToBudget(
+  budgetId: string,
+  amount: number,
+  description: string,
+  email: string,
+) {
+  /* Bloc try catch  */
+  try {
+      
+  /*  console.log(email) */
+  /*  Fonction de depense type =  'expense' */
+      const type =  'expense'
+
+  // recherche user ds notre table local user
+      const user = await prisma.user.findUnique({
+          where: { email }
+      })
+
+      if (!user) {
+          throw new Error('Utilisateur non trouvé')
+      } 
+
+  // Get budget with all his transactions
+      const budget = await prisma.budget.findUnique({
+          where: {
+              id: budgetId
+          },
+          include: {
+              transaction: true
+          }
+      })
+
+      if (!budget) {
+          throw new Error('Budget non trouvé.');
+      }
+  // totaliser le total pour savoir si on va depasser le budget
+      const totalTransactions = budget.transaction.reduce((sum, transaction) => {
+          return sum + transaction.amount
+      }, 0)
+
+      const totalWithNewTransaction = totalTransactions + amount
+
+      if (totalWithNewTransaction > budget.amount) {
+          throw new Error('Le montant total des transactions dépasse le montant du budget.');
+      }
+
+      const capitalized = description.charAt(0).toUpperCase()+ description.slice(1)
+      description = capitalized
+
+      const newTransaction = await prisma.transaction.create({
+          data: {
+              amount,
+              description,
+              emoji: budget.emoji,
+              type:type, 
+              userId: user.id,
+              budgetId:budgetId,
+          }
+      })   
+      
+      /* Deux maniere differantes d enregistrer cette derniere genere une erreur */
+      /* const newTransaction = await prisma.transaction.create({
+          data: {
+              amount,
+              description,
+              emoji: budget.emoji,
+              type:type, 
+              userId: user.id,
+              budget: {
+                  connect: {id: budget.id }
+              }
+          }
+      }) */
+
+  } catch (error) {
+      console.error('Erreur lors de l\'ajout de la transaction:', error);
+      throw error;
+  }
+}
+
+/* ======================================================================= */
+/**
+ * Adds a new budget for a user.
+ * @param email - The user's email address.
+ * @param name - The name of the budget.
+ * @param amount - The budget amount.
+ * @param emoji - The optional emoji for the budget.
+ * @returns A promise resolving when the budget is created.
+ * @throws Error if the user is not found or the input is invalid.
+ */
+export async function addBudget(email = "tlemcencrma20@gmail.com", name: string, amount: number, selectedEmoji: string) {
+  try {
+      const user = await prisma.user.findUnique({
+          where: { email }
+      })
+
+      if (!user) {
+          throw new Error('Utilisateur non trouvé')
+      }
+      const capitalized = name.charAt(0).toUpperCase()+ name.slice(1)
+      name = capitalized
+      await prisma.budget.create({
+          data: {
+              name,
+              amount,
+              emoji: selectedEmoji,
+              userId: user.id
+          }
+      })
+  } catch (error) {
+      console.error('Erreur lors de l\'ajout du budget:', error);
+      throw error
+  }
+}
+/* ======================================================================= */
+/**
+ * Deletes a transaction by ID.
+ * @param transactionId - The ID of the transaction to delete.
+ * @returns A promise resolving when the transaction is deleted.
+ * @throws Error if the transaction is not found or the ID is invalid.
+ */
+export async function deleteTransaction(transactionId: string) {
+ 
+  try {
+      // Validation des données
+      if (!transactionId) throw new Error("ID manquant");
+
+      console.log(" id de la transact", transactionId)
+      // Appel à Prisma
+      const transaction = await prisma.transaction.findUnique({
+          where: {
+              id: transactionId
+          }
+      })
+
+      if (!transaction) {
+          throw new Error('Transaction non trouvée.');
+      }
+
+      await prisma.transaction.delete({
+          where: {
+              id: transactionId,
+          },
+      });
+  } catch (error) {
+      console.error('Erreur lors de la suppressio de la transaction:', error);
+      throw error;
+  }
+}
+
+/* ======================================================================= */
+/**
+ * Deletes a budget by ID and its associated transactions.
+ * @param budgetId - The ID of the budget to delete.
+ * @returns A promise resolving when the budget and its transactions are deleted.
+ * @throws Error if the budget is not found or the ID is invalid.
+ */
+export const deleteBudget = async (budgetId: string) => {
+  try {
+      // Validation des données
+      if (!budgetId) throw new Error("ID manquant");
+     
+      console.log(" id du budget", budgetId)     
+      const budget = await prisma.budget.findUnique({
+          where: {
+              id: budgetId
+          }
+      })
+
+      if (!budget) {
+          throw new Error('Budget non trouvée.');
+      }
+
+      // Supprimer les transactions associées
+      await prisma.transaction.deleteMany({
+          where: { budgetId }
+      })
+       // Supprimer le budget
+      await prisma.budget.delete({
+          where: {
+              id: budgetId,
+          },
+      });
+
+  } catch (error) {
+      console.error('Erreur lors de la suppressio de la transaction:', error);
+      throw error;
+  } 
+
+}
+
+/* =========================================================================== */
+/*           Fin -  fonctions de mutation (qui modifient des données)          */
+/* =========================================================================== */
+
+
+/* ======================================================================= */
 /**
  * Retrieves all test messages from the database.
  * @returns A promise resolving to an array of test messages.
@@ -248,7 +488,7 @@ export async function getTransactionsByEmailAndPeriod3( email = "tlemcencrma20@g
 }
 /* ======================================================================= */
 // Calcul des trois totaux
-export async function getTotalTransactionAmountByEmail( email = "tlemcencrma20@gmail.com") {
+/* export async function getTotalTransactionAmountByEmail( email = "tlemcencrma20@gmail.com") {
   if (!email) return
   try {
       const user = await prisma.user.findUnique({
@@ -288,9 +528,7 @@ const totalExpenses = round(totalExpensesRaw);
 
 // Optionnel : calcul du solde
 const balance = round(totalIncome - totalExpenses);
-     /*  const balance = totalIncome - totalExpenses; */
-
-     
+    
       return {
           totalIncome,
           totalExpenses,
@@ -302,164 +540,10 @@ const balance = round(totalIncome - totalExpenses);
       throw error;
   }
 }
-/* ======================================================================= */
-export async function addIncomeTransaction(
-  amount: number,
-  description: string,
-  email: string,
-) {
-  /* Bloc try catch  */
-  try {
-      const type =  'income'
-
-  // recherche user ds notre table local user
-      const user = await prisma.user.findUnique({
-          where: { email }
-      })
-
-      if (!user) {
-          throw new Error('Utilisateur non trouvé')
-      } 
-
-      const capitalized = description.charAt(0).toUpperCase()+ description.slice(1)
-      description = capitalized
-
-      const newTransaction = await prisma.transaction.create({
-          data: {
-              amount,
-              description,
-              emoji: null,
-              type:type, 
-              userId: user.id,
-              budgetId:null,
-          }
-      })   
-      
-
-  } catch (error) {
-      console.error('Erreur lors de l\'ajout de la transaction:', error);
-      throw error;
-  }
-}
-
-/* ======================================================================= */
-export async function addExpenseTransactionToBudget(
-  budgetId: string,
-  amount: number,
-  description: string,
-  email: string,
-) {
-  /* Bloc try catch  */
-  try {
-      
-  /*  console.log(email) */
-  /*  Fonction de depense type =  'expense' */
-      const type =  'expense'
-
-  // recherche user ds notre table local user
-      const user = await prisma.user.findUnique({
-          where: { email }
-      })
-
-      if (!user) {
-          throw new Error('Utilisateur non trouvé')
-      } 
-
-  // Get budget with all his transactions
-      const budget = await prisma.budget.findUnique({
-          where: {
-              id: budgetId
-          },
-          include: {
-              transaction: true
-          }
-      })
-
-      if (!budget) {
-          throw new Error('Budget non trouvé.');
-      }
-  // totaliser le total pour savoir si on va depasser le budget
-      const totalTransactions = budget.transaction.reduce((sum, transaction) => {
-          return sum + transaction.amount
-      }, 0)
-
-      const totalWithNewTransaction = totalTransactions + amount
-
-      if (totalWithNewTransaction > budget.amount) {
-          throw new Error('Le montant total des transactions dépasse le montant du budget.');
-      }
-
-      const capitalized = description.charAt(0).toUpperCase()+ description.slice(1)
-      description = capitalized
-
-      const newTransaction = await prisma.transaction.create({
-          data: {
-              amount,
-              description,
-              emoji: budget.emoji,
-              type:type, 
-              userId: user.id,
-              budgetId:budgetId,
-          }
-      })   
-      
-      /* Deux maniere differantes d enregistrer cette derniere genere une erreur */
-      /* const newTransaction = await prisma.transaction.create({
-          data: {
-              amount,
-              description,
-              emoji: budget.emoji,
-              type:type, 
-              userId: user.id,
-              budget: {
-                  connect: {id: budget.id }
-              }
-          }
-      }) */
-
-  } catch (error) {
-      console.error('Erreur lors de l\'ajout de la transaction:', error);
-      throw error;
-  }
-}
-
-/* ======================================================================= */
-/**
- * Deletes a transaction by ID.
- * @param transactionId - The ID of the transaction to delete.
- * @returns A promise resolving when the transaction is deleted.
- * @throws Error if the transaction is not found or the ID is invalid.
  */
-export async function deleteTransaction(transactionId: string) {
- 
-  try {
-      // Validation des données
-      if (!transactionId) throw new Error("ID manquant");
 
-      console.log(" id de la transact", transactionId)
-      // Appel à Prisma
-      const transaction = await prisma.transaction.findUnique({
-          where: {
-              id: transactionId
-          }
-      })
-
-      if (!transaction) {
-          throw new Error('Transaction non trouvée.');
-      }
-
-      await prisma.transaction.delete({
-          where: {
-              id: transactionId,
-          },
-      });
-  } catch (error) {
-      console.error('Erreur lors de la suppressio de la transaction:', error);
-      throw error;
-  }
-}
-
-export async function getTransactionsByPeriod(email:string , period: string) {
+/* transfere vers data.ts */
+/* export async function getTransactionsByPeriod(email:string , period: string) {
   try {
       const now = new Date();
       let dateLimit: Date | undefined;
@@ -530,85 +614,11 @@ export async function getTransactionsByPeriod(email:string , period: string) {
       throw error;
   }
 }
-
-/* ======================================================================= */
-/**
- * Adds a new budget for a user.
- * @param email - The user's email address.
- * @param name - The name of the budget.
- * @param amount - The budget amount.
- * @param emoji - The optional emoji for the budget.
- * @returns A promise resolving when the budget is created.
- * @throws Error if the user is not found or the input is invalid.
  */
-export async function addBudget(email = "tlemcencrma20@gmail.com", name: string, amount: number, selectedEmoji: string) {
-  try {
-      const user = await prisma.user.findUnique({
-          where: { email }
-      })
-
-      if (!user) {
-          throw new Error('Utilisateur non trouvé')
-      }
-      const capitalized = name.charAt(0).toUpperCase()+ name.slice(1)
-      name = capitalized
-      await prisma.budget.create({
-          data: {
-              name,
-              amount,
-              emoji: selectedEmoji,
-              userId: user.id
-          }
-      })
-  } catch (error) {
-      console.error('Erreur lors de l\'ajout du budget:', error);
-      throw error
-  }
-}
-/* ======================================================================= */
-/**
- * Deletes a budget by ID and its associated transactions.
- * @param budgetId - The ID of the budget to delete.
- * @returns A promise resolving when the budget and its transactions are deleted.
- * @throws Error if the budget is not found or the ID is invalid.
- */
-export const deleteBudget = async (budgetId: string) => {
-  try {
-      // Validation des données
-      if (!budgetId) throw new Error("ID manquant");
-     
-      console.log(" id du budget", budgetId)     
-      const budget = await prisma.budget.findUnique({
-          where: {
-              id: budgetId
-          }
-      })
-
-      if (!budget) {
-          throw new Error('Budget non trouvée.');
-      }
-
-      // Supprimer les transactions associées
-      await prisma.transaction.deleteMany({
-          where: { budgetId }
-      })
-       // Supprimer le budget
-      await prisma.budget.delete({
-          where: {
-              id: budgetId,
-          },
-      });
-
-  } catch (error) {
-      console.error('Erreur lors de la suppressio de la transaction:', error);
-      throw error;
-  } 
-
-}
-
 
 //********************************************************************/
-// Dashboard
+//                               Dashboard
+//********************************************************************/
 export async function getTotalTransactionAmount(email="tlemcencrma20@gmail.com") {
   try {
       const user = await prisma.user.findUnique({
