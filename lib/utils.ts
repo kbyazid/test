@@ -117,7 +117,7 @@ export function formatTableTime(date: string | Date | number): string {
     clearTimeout(timeout);
     timeout = setTimeout(() => func.apply(this, args), delay);
   };
-} */
+}  */
 
 // Pour Shadcn/ui ou équivalent pour fusionner les classes Tailwind
 /* export function cn(...inputs: ClassValue[]) {

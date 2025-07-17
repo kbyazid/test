@@ -6,7 +6,8 @@ import { formatCurrency, formatDate } from '@/lib/utils'; // Vos utilitaires de 
 
 import DashboardCard from '../components/DashboardCard'; // Assurez-vous du chemin
 import TransactionCard from '../components/TransactionCard'; // Assurez-vous du chemin
-
+// Importez le nouveau Client Component pour l'ajout de transaction
+import AddIncomeTransactionSection from '../components/AddIncomeTransactionSection.tsx';
 import {
     ArrowDownCircle,
     ArrowUpCircle,
@@ -66,6 +67,16 @@ export default async function TransactionList() {
 
     return (
         <>
+         {/* Header */}
+         <div className="space-y-6 mb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Recettes / Dépenses</h1>
+                    <p className="text-muted-foreground">Suivez et gérez vos transactions.</p>
+                </div>
+                {/* Rendre le Client Component pour l'ajout de transaction */}
+            <AddIncomeTransactionSection userEmail={userEmail} />
+            </div>
+            
             {/* Cards - Rendu ici car les données des totaux sont fetchées par TransactionList */}
             <div className="grid md:grid-cols-3 gap-4 mb-4">
                 <DashboardCard
