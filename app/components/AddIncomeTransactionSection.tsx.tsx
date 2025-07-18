@@ -17,6 +17,7 @@ type NotificationPosition = 'top-center' | 'bottom-center' | 'top-right'; */
 
 interface AddIncomeTransactionSectionProps {
   userEmail: string;
+  onAddSuccess: () => void; // Callback pour rafraîchir la page après ajout
 }
 const userEmail = "tlemcencrma20@gmail.com"
 console.log(userEmail)
@@ -25,7 +26,7 @@ function isError(error: unknown): error is Error {
   return error instanceof Error;
 }
 
-const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = () => {
+const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = ({ userEmail, onAddSuccess }) => {
   const router = useRouter();
   const { openModal, closeModal } = useModal();
 
@@ -71,13 +72,14 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
         showNotification('Description invalide après nettoyage.', 'warning', 'top-center');
         return;
       }
-
+      if (!userEmail) return
       await addIncomeTransaction(amountNumber, sanitizedDescription, "tlemcencrma20@gmail.com");
       closeModal('add_income_modal'); // Assurez-vous que l'ID de votre modale est 'add_income_modal'
       setDescription('');
       setAmount('');
       showNotification('Recette ajoutée avec succès !', 'success', 'bottom-center');
       router.refresh(); // Crucial pour rafraîchir le Server Component parent
+      onAddSuccess(); // Rafraîchir la page
 
     } catch (error: unknown) {
       console.error('Échec de l\'ajout de la transaction:', error);

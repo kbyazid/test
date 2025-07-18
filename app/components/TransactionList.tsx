@@ -17,6 +17,7 @@ import {
     // Trash, // Pas utilisé pour l'affichage pur
     // View // Pas utilisé pour l'affichage pur
 } from 'lucide-react';
+import { revalidatePath } from "next/cache";
 
 // Composant principal TransactionList (Server Component)
 export default async function TransactionList() {
@@ -64,7 +65,11 @@ export default async function TransactionList() {
            
         );
     }
-
+    // Fonction pour revalider le cache après suppression ou ajout
+        async function handleTransactionChange() {
+          "use server";
+          revalidatePath(`/transaction`);
+        }
     return (
         <>
          {/* Header */}
@@ -74,7 +79,10 @@ export default async function TransactionList() {
                     <p className="text-muted-foreground">Suivez et gérez vos transactions.</p>
                 </div>
                 {/* Rendre le Client Component pour l'ajout de transaction */}
-            <AddIncomeTransactionSection userEmail={userEmail} />
+            <AddIncomeTransactionSection 
+            userEmail={userEmail} 
+            onAddSuccess={handleTransactionChange}
+            />
             </div>
             
             {/* Cards - Rendu ici car les données des totaux sont fetchées par TransactionList */}
