@@ -47,6 +47,9 @@ const Navbar = () => {
                   <Link href={"/transaction"} className="btn btn-sm">
                     Mes Transactions
                   </Link>
+                  <Link href={"/test"} className="btn btn-sm">
+                    Test Tr
+                  </Link>
                 </div>
                 <div className="md:flex hidden space-x-2">
                  
@@ -135,6 +138,13 @@ const Navbar = () => {
                   onClick={toggleMenu}
                 >
                   Mes Transactions
+                </Link>
+                <Link
+                  href={"/test"}
+                  className="btn btn-sm w-full"
+                  onClick={toggleMenu}
+                >
+                  Test Tr
                 </Link>
               </div>
             )}

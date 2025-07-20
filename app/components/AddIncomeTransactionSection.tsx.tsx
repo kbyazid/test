@@ -10,6 +10,7 @@ import { useModal } from '@/lib/modal'; // Votre hook useModal
 import Notification , { NotificationType, NotificationPosition } from './Notification'; // Votre composant Notification
 /* import { debounce } from '@/lib/utils'; */ // Votre utilitaire debounce
 import DOMPurify from 'dompurify'; // Pour la sécurité XSS
+/* import { revalidatePath } from 'next/cache'; */
 
 // Définition des types pour Notification si non déjà globales
 /* type NotificationType = 'success' | 'error' | 'warning';
@@ -77,7 +78,7 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
       closeModal('add_income_modal'); // Assurez-vous que l'ID de votre modale est 'add_income_modal'
       setDescription('');
       setAmount('');
-      showNotification('Recette ajoutée avec succès !', 'success', 'bottom-center');
+      showNotification('Recette ajoutée avec succès !', 'success', 'top-center');
       router.refresh(); // Crucial pour rafraîchir le Server Component parent
       onAddSuccess(); // Rafraîchir la page
 
@@ -122,6 +123,9 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
           vous devrez l'importer et lui passer les props nécessaires. */}
       <dialog id="add_income_modal" className="modal">
         <div className="modal-box">
+        <form method="dialog">
+          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
           <h3 className="font-bold text-lg">Ajouter une nouvelle recette</h3>
           <form onSubmit={(e) => { e.preventDefault(); handleAddTransaction(); }} className="py-4">
             <div className="form-control mb-4">
@@ -141,7 +145,7 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
 
             <div className="form-control mb-4">
               <label className="label">
-                <span className="label-text">Montant (USD)</span>
+                <span className="label-text">Montant (DZ)</span>
               </label>
               <input
                 type="number"
@@ -157,7 +161,16 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
             </div>
 
             <div className="modal-action">
-              <button type="button" className="btn" onClick={() => closeModal('add_income_modal')}>Annuler</button>
+              <button 
+                type="button" 
+                className="btn" 
+                /* onClick={() => closeModal('add_income_modal')} */
+                onClick={() => {
+                    closeModal('add_income_modal');
+                  }}
+                >Annuler
+              </button>
+
               <button type="submit" className="btn btn-primary" disabled={isAdding}>
                 {isAdding ? 'Ajout...' : 'Ajouter'}
               </button>

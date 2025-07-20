@@ -488,7 +488,7 @@ export async function getTransactionsByEmailAndPeriod3( email = "tlemcencrma20@g
 }
 /* ======================================================================= */
 // Calcul des trois totaux
-/* export async function getTotalTransactionAmountByEmail( email = "tlemcencrma20@gmail.com") {
+export async function getTotalTransactionAmountByEmailEffacer( email = "tlemcencrma20@gmail.com") {
   if (!email) return
   try {
       const user = await prisma.user.findUnique({
@@ -540,10 +540,10 @@ const balance = round(totalIncome - totalExpenses);
       throw error;
   }
 }
- */
+ 
 
 /* transfere vers data.ts */
-/* export async function getTransactionsByPeriod(email:string , period: string) {
+export async function getTransactionsByPeriodEffacer(email:string , period: string) {
   try {
       const now = new Date();
       let dateLimit: Date | undefined;
@@ -614,7 +614,7 @@ const balance = round(totalIncome - totalExpenses);
       throw error;
   }
 }
- */
+ 
 
 //********************************************************************/
 //                               Dashboard

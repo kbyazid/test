@@ -5,15 +5,6 @@ import { Suspense } from "react"; // Importez Suspense
 const TransactionPage = async () => {
     return (
         <Wrapper >
-            {/* Header */}
-{/*             <div className="space-y-6 mb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Recettes / Dépenses</h1>
-                    <p className="text-muted-foreground">Suivez et gérez vos transactions.</p>
-                </div>
-            </div> */}
-
-
             {/* Transactions List */}
             {/* Utilisation de Suspense pour charger les transactions de manière asynchrone */}
             <Suspense fallback={
