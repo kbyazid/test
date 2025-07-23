@@ -95,7 +95,7 @@ export default async function Home() {
                     </div>
                 </div>
             </div>
-        <div className="flex flex-col items-center justify-center mt-3 ">
+        <div className="flex flex-col items-center justify-center mt-10 ">
           <h1 className="text-2xl font-bold text-center text-blue-600">{message}</h1>
         </div>
       </div>

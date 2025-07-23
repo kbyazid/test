@@ -1,5 +1,7 @@
 // app/page.tsx
 // Suppression de "use client"; - Cette page est maintenant un Server Component
+export const dynamic = "force-dynamic"; // Désactive le cache statique
+export const revalidate = 0; // Pas de cache
 import { BudgetList } from "./components/BudgetList";
 import Wrapper from "./components/Wrapper"; // Supposons que c'est un Client/Server Component
 import { Suspense } from "react"; // Importez Suspense
