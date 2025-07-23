@@ -146,7 +146,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                       <th>Action</th>
                     </tr> */}
                     <tr>
-                    <th></th>
+                    {/* <th></th> */}
                       <th className="text-left">Montant</th>
                       <th>Description</th>
 		                  <th className="md:hidden text-left px-2 py-3">Date/Heure</th>
@@ -158,7 +158,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                   <tbody>
                     {budget?.transaction?.map((transaction: Transaction) => (
                       <tr key={transaction.id}>
-                        <td className='text-lg md:text-3xl'>{transaction.emoji}</td>
+                        {/* <td className='text-lg md:text-3xl'>{transaction.emoji}</td> */}
                         <td>
                           <div className="badge badge-accent badge-xs md:badge-sm">
                             - {formatCurrency(transaction.amount)}{/* {transaction.amount} Da */}</div>
