@@ -19,7 +19,9 @@ const Navbar = () => {
   };
 
   return (
-    <div className="bg-base-200/30 px-5 md:px-[10%] py-4 relative">
+    // Ajout des classes 'fixed', 'top-0', 'left-0', 'right-0', 'z-50' ici
+    <div className="fixed top-0 left-0 right-0 z-50 bg-base-200/90 backdrop-blur-sm px-5 md:px-[10%] py-2">
+    {/* <div className="bg-base-200/30 px-5 md:px-[10%] py-4 relative"> */}
       {((
           <>
             <div className="flex justify-between items-center">

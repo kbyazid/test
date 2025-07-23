@@ -7,7 +7,7 @@ const Wrapper = ({children} : WrapperProps) => {
   return (
     <div>
       <Navbar/>
-        <div className="px-5 lg:px-[10%] mt-10 mb-10">
+        <div className="px-5 lg:px-[10%] mt-15 mb-10">
             {children}
         </div>
     </div>
