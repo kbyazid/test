@@ -2,7 +2,10 @@
 "use client"; // Important: error.tsx must be a Client Component
 
 import { useEffect } from 'react';
+import Link from 'next/link'; // <--- ASSUREZ-VOUS D'IMPORTER LINK
 
+
+  
 // The error.tsx component receives 'error' and 'reset' props
 export default function Error({
   error,          // The error object
@@ -27,32 +30,33 @@ export default function Error({
   }
 
   return (
+
     <div className="flex flex-col items-center justify-center min-h-screen bg-base-100 text-center p-4">
-      <h2 className="text-3xl font-bold text-red-600 mb-4">Oups !</h2>
-      <p className="text-xl text-gray-700 mb-6">{displayMessage}</p>
-      <p className="text-sm text-gray-500 mb-8">
-        Si le problème persiste, veuillez contacter le support.
-        <br/>
-        {/* For debugging, you might include error.message or error.digest */}
-        {process.env.NODE_ENV === 'development' && (
-          <span className="block mt-2 text-xs text-gray-400">
-            Détails de l&aposerreur (Dev uniquement) : {error.message} {error.digest ? `(Digest: ${error.digest})` : ''}
-          </span>
-        )}
-      </p>
-      <button
-        className="btn btn-primary" // Assuming you have DaisyUI or similar classes
-        onClick={
-          // Attempt to re-render the segment by calling the reset function
-          () => reset()
-        }
-      >
-        Réessayer
-      </button>
-      <div className="mt-8">
-        {/* Optional: Add a link to the homepage or another relevant page */}
-        <link href="/" className="link link-hover text-blue-500">Retour à l&aposaccueil</link>
+          <h2 className="text-3xl font-bold text-red-600 mb-4">Oups !</h2>
+          <p className="text-xl text-gray-700 mb-6">{displayMessage}</p>
+          <p className="text-sm text-gray-500 mb-8">
+              Si le problème persiste, veuillez contacter le support.
+              <br />
+              {/* For debugging, you might include error.message or error.digest */}
+              {process.env.NODE_ENV === 'development' && (
+                  <span className="block mt-2 text-xs text-gray-400">
+                      Détails de l&aposerreur (Dev uniquement) : {error.message} {error.digest ? `(Digest: ${error.digest})` : ''}
+                  </span>
+              )}
+          </p>
+          <button
+              className="btn btn-primary" // Assuming you have DaisyUI or similar classes
+              onClick={
+                  // Attempt to re-render the segment by calling the reset function
+                  () => reset()}
+          >
+              Réessayer
+          </button>
+          <div className="mt-8">
+              {/* Optional: Add a link to the homepage or another relevant page */}
+              <Link href="/" className="link link-hover text-blue-500">Retour à l&apos;accueil</Link>
+          </div>
       </div>
-    </div>
+     
   );
 }

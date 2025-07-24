@@ -1,6 +1,6 @@
-export const dynamic = "force-dynamic"; // Désactive le cache statique
+/* export const dynamic = "force-dynamic"; // Désactive le cache statique
 export const revalidate = 0; // Pas de cache
-
+ */
 import TransactionList from '../components/TransactionList';
 import Wrapper from '../components/Wrapper'
 import { Suspense } from "react"; // Importez Suspense

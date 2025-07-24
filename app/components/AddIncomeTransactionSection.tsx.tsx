@@ -3,9 +3,10 @@
 
 import React, { useState} from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowDownCircle } from 'lucide-react';
+import { ArrowDownCircle, RotateCw } from 'lucide-react';
 
 import { addIncomeTransaction } from '@/action'; // Server Action
+import { revalidateTransactionsPage } from '@/action'; // Importez votre nouvelle Server Action pour la revalidation
 import { useModal } from '@/lib/modal'; // Votre hook useModal
 import Notification , { NotificationType, NotificationPosition } from './Notification'; // Votre composant Notification
 /* import { debounce } from '@/lib/utils'; */ // Votre utilitaire debounce
@@ -34,6 +35,7 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false); // Nouvel état pour le bouton d'actualisation
   const [notification, setNotification] = useState<{ message: string; type: NotificationType; position: NotificationPosition } | null>(null);
 
   // Notification debounced
@@ -96,6 +98,23 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
     }
   };
 
+  // Nouvelle fonction pour gérer le clic sur le bouton d'actualisation
+  const handleRefreshClick = async () => {
+    setIsRefreshing(true);
+    try {
+      await revalidateTransactionsPage(); // Appel de la Server Action
+      showNotification('Données actualisées avec succès !', 'success', 'bottom-center');
+      // Pas besoin de router.refresh() ici car la revalidation gère l'invalidation du cache
+      // et le Server Component (TransactionList) sera re-rendu avec les données fraîches.
+    } catch (error) {
+      console.error("Échec de l'actualisation:", error);
+      showNotification('Erreur lors de l\'actualisation des données.', 'error', 'top-center');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+
   return (
     <>
       {/* Composant Notification */}
@@ -107,8 +126,23 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
           onclose={handleCloseNotification}
         />
       )}
+<div className="modal-action">
+      
 
-      {/* Bouton d'ajout de recette */}
+      {/* Nouveau bouton d'actualisation */}
+      <button
+          className="btn btn-outline btn-info" // Style de bouton Tailwind/DaisyUI
+          onClick={handleRefreshClick}
+          disabled={isRefreshing} // Désactive le bouton pendant l'actualisation
+        >
+          {isRefreshing ? (
+            <span className="loading loading-spinner loading-sm"></span> // Affichez un spinner pendant l'actualisation
+          ) : (
+            <RotateCw className="h-3 w-3 mr-1" />
+          )}
+          
+        </button>
+        {/* Bouton d'ajout de recette */}
       <button
         className="btn btn-primary"
         onClick={() => openModal('add_income_modal')}
@@ -117,7 +151,7 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
         <ArrowDownCircle className="h-5 w-5" />
         Ajouter une recette
       </button>
-
+        </div>
       {/* Modale d'ajout de recette (AddIncomeModal) */}
       {/* J'ai recréé la structure de la modale ici. Si vous avez un composant AddIncomeModal séparé,
           vous devrez l'importer et lui passer les props nécessaires. */}

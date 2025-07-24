@@ -83,6 +83,7 @@ export default async function TransactionList() {
             userEmail={userEmail} 
             onAddSuccess={handleTransactionChange}
             />
+            {/* onAddSuccess={handleTransactionChange} */}
             </div>
             
             {/* Cards - Rendu ici car les données des totaux sont fetchées par TransactionList */}

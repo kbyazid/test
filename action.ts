@@ -2,6 +2,12 @@
 import { Prisma } from "@prisma/client/extension";
 import { Budget, Transaction } from "./type";
 import prisma from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+
+export async function revalidateTransactionsPage() {
+  revalidatePath("/transaction"); // Revalide le cache de la page /transaction
+  console.log("✔️ Page /transaction revalidée !"); // Pour le débogage dans le terminal du serveur
+}
 
 /* =========================================================================== */
 /* contiendra uniquement les fonctions de mutation (qui modifient des données) */
