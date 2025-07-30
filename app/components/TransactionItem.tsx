@@ -13,7 +13,7 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
             <div className='my-1'>
                 <button className='btn'>
                 <Link href={`/manage/${transaction.budgetId}`}  className="badge badge-accent">
-                - {transaction.amount}
+                {transaction.amount}
                 </Link> 
                 {transaction.budgetName}
                  
