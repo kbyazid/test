@@ -225,7 +225,7 @@ const DashboardPage = () => {
                               day: 'numeric',
                             })}
                           </span>
-                          <span className="text-lg font-bold text-red-600">
+                          <span className="text-lg font-bold">
                             -{formatCurrency(expense.totalAmount)}
                           </span>
                         </li>
