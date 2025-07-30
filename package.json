@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "seed:users": "ts-node add-users.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.11.1",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@faker-js/faker": "^9.9.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.0.13",
     "@types/react": "^19.1.8",
@@ -31,6 +33,7 @@
     "eslint-config-next": "15.3.4",
     "prisma": "^6.11.1",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
 }

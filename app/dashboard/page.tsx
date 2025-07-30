@@ -7,7 +7,9 @@ import {
   getTotalTransactionAmount,
   getTransactionCount,
   getUserBudgetData,
+  getDailyExpensesSummary, // <--- Importez la nouvelle fonction
 } from "@/action";
+import { DailyExpense } from "@/action"; // <--- Importez l'interface DailyExpense
 import Wrapper from "../components/Wrapper";
 import {
   CircleDollarSignIcon,
@@ -27,6 +29,7 @@ import {
 import TransactionItem from "../components/TransactionItem";
 import BudgetItem from "../components/BudgetItem";
 import Link from "next/link";
+import { formatCurrency } from '@/lib/utils'
 
 interface AxisTickPayload {
   value: string | number;
@@ -38,6 +41,7 @@ interface BudgetSummary {
   totalBudgetAmount: number;
   totalTransactionsAmount: number;
 }
+
 
 const DashboardPage = () => {
   const [totalAmount, setTotalAmount] = useState<number | null>(null);
@@ -51,6 +55,7 @@ const DashboardPage = () => {
   const [budgetData, setBudgetData] = useState<BudgetSummary[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [dailyExpenses, setDailyExpenses] = useState<DailyExpense[]>([]); // <--- Nouvel état pour les dépenses journalières
 
   const renderCustomAxisTick = ({
     x,
@@ -86,6 +91,7 @@ const DashboardPage = () => {
         const budgetsData = await getUserBudgetData(email);
         const lastTransactions = await getLastTransactions(email);
         const lastBudgets = await getLastBudgets(email);
+        const dailySummary = await getDailyExpensesSummary(email); // <--- Appel de la nouvelle fonction
 
         setTotalAmount(amount);
         setTotalCount(count);
@@ -93,6 +99,7 @@ const DashboardPage = () => {
         setBudgetData(budgetsData);
         setTransactions(lastTransactions);
         setBudgets(lastBudgets);
+        setDailyExpenses(dailySummary); // <--- Mise à jour du nouvel état
         setIsLoading(false);
       } catch (error) {
         console.error("Erreur lors de la récupération des données :", error);
@@ -124,9 +131,10 @@ const DashboardPage = () => {
           </div>
         ) : (
           <div>
+            {/* section : Totaux */}
             <div className="grid md:grid-cols-3 gap-4">
               <DashboardCard
-                label="Total des transactions"
+                label="Total des depenses"
                 value={totalAmount !== null ? `${totalAmount} Da` : "N/A"}
                 icon={<CircleDollarSignIcon />}
               />
@@ -141,6 +149,7 @@ const DashboardPage = () => {
                 icon={<Landmark />}
               />
             </div>
+            {/* section : Graphe - Budgets - dreniere depenses - dep par journee*/}
             <div className="w-full md:flex mt-4">
               <div className="rounded-xl md:w-2/3">
                 <div className="border-2 border-base-300 p-5 rounded-xl">
@@ -196,8 +205,37 @@ const DashboardPage = () => {
                     </Link>
                   ))}
                 </ul>
+                {/* Nouvelle section : Récap des dépenses par journée */}
+                <div className="mt-8 border-2 border-base-300 p-5 rounded-xl">
+                  {/* <div className="flex justify-center items-center py-2"> */}
+                  <h3 className="text-lg font-bold mb-3 text-center">
+                    Récapitulatif des Dépenses par Journée
+                  </h3>
+                 {/*  </div> */}
+                  {dailyExpenses.length === 0 ? (
+                    <p className="text-gray-500">Aucune dépense enregistrée par journée.</p>
+                  ) : (
+                    <ul className="divide-y divide-base-300">
+                      {dailyExpenses.slice(0, 14).map((expense) => (
+                        <li key={expense.date} className="flex justify-between items-center py-2">
+                          <span className="font-medium text-accent">
+                            {new Date(expense.date).toLocaleDateString('fr-FR', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
+                          </span>
+                          <span className="text-lg font-bold text-red-600">
+                            -{formatCurrency(expense.totalAmount)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             </div>
+
           </div>
         )}
       </div>

@@ -40,7 +40,7 @@ export default function Error({
               {/* For debugging, you might include error.message or error.digest */}
               {process.env.NODE_ENV === 'development' && (
                   <span className="block mt-2 text-xs text-gray-400">
-                      Détails de l&aposerreur (Dev uniquement) : {error.message} {error.digest ? `(Digest: ${error.digest})` : ''}
+                      Détails de l&apo;serreur (Dev uniquement) : {error.message} {error.digest ? `(Digest: ${error.digest})` : ''}
                   </span>
               )}
           </p>

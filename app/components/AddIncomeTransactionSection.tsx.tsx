@@ -103,7 +103,7 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
     setIsRefreshing(true);
     try {
       await revalidateTransactionsPage(); // Appel de la Server Action
-      showNotification('Données actualisées avec succès !', 'success', 'bottom-center');
+      showNotification('Données actualisées avec succès !', 'success', 'top-center');
       // Pas besoin de router.refresh() ici car la revalidation gère l'invalidation du cache
       // et le Server Component (TransactionList) sera re-rendu avec les données fraîches.
     } catch (error) {
@@ -138,7 +138,7 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
           {isRefreshing ? (
             <span className="loading loading-spinner loading-sm"></span> // Affichez un spinner pendant l'actualisation
           ) : (
-            <RotateCw className="h-3 w-3 mr-1" />
+            <RotateCw className="h-4 w-4 mr-1" />
           )}
           
         </button>

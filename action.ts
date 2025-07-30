@@ -3,7 +3,59 @@ import { Prisma } from "@prisma/client/extension";
 import { Budget, Transaction } from "./type";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { transaction_type } from "./app/generated/prisma";
 
+// Interface pour le résultat groupé par jour
+export interface DailyExpense {
+    date: string; // La date formatée (ex: YYYY-MM-DD)
+    totalAmount: number; // Le total des dépenses pour cette date
+  }
+
+  export async function getDailyExpensesSummary(userEmail: string): Promise<DailyExpense[]> {
+    try {
+      // Obtenez toutes les transactions pour l'utilisateur
+      const transactions = await prisma.transaction.findMany({
+        where: {
+          user: {
+            email: userEmail,
+          },
+          type: transaction_type.expense,
+        },
+        select: {
+          amount: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: 'desc', // Important pour avoir les plus récentes en premier
+        },
+      });
+  
+      // Grouper les transactions par date
+      const dailyExpensesMap = new Map<string, number>();
+  
+      transactions.forEach(transaction => {
+        // Formater la date en YYYY-MM-DD pour le regroupement
+        const date = transaction.createdAt.toISOString().split('T')[0];
+        const currentAmount = dailyExpensesMap.get(date) || 0;
+        dailyExpensesMap.set(date, currentAmount + transaction.amount);
+      });
+  
+      // Convertir la Map en tableau de DailyExpense et trier par date décroissante
+      const dailyExpenses: DailyExpense[] = Array.from(dailyExpensesMap.entries())
+        .map(([date, totalAmount]) => ({ date, totalAmount }))
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Tri par date décroissante
+  
+      return dailyExpenses;
+  
+    } catch (error) {
+      console.error("Erreur lors de la récupération du résumé des dépenses journalières :", error);
+      // Gérer l'erreur, par exemple, renvoyer un tableau vide ou lever une exception
+      return [];
+    }
+  }
+  
+ 
+/* =============================================================================== */  
 export async function revalidateTransactionsPage() {
   revalidatePath("/transaction"); // Revalide le cache de la page /transaction
   console.log("✔️ Page /transaction revalidée !"); // Pour le débogage dans le terminal du serveur
@@ -792,7 +844,7 @@ export const getLastTransactions = async (email="tlemcencrma20@gmail.com") => {
           orderBy : {
               createdAt: 'desc',
           },
-          take: 10 , 
+          take: 20 , 
           include: {
               budget : {
                   select: {

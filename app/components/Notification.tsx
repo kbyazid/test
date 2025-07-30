@@ -70,7 +70,7 @@ const Notification: React.FC<NotificationProps> = ({ message, onclose, type, pos
     <div className={`toast ${positionClassName}`}>
       {/* Div pour le style de l'alerte, l'ombre, la marge interne, etc. */}
       {/* Ajout de la classe 'opacity-90' pour la transparence (ajustez la valeur si nécessaire) */}
-      <div className={`alert ${alertTypeClassName} p-2 text-xl shadow-lg opacity-70`}>
+      <div className={`alert ${alertTypeClassName} mt-6 p-2 text-xl shadow-lg opacity-70`}>
         <span className="flex items-center">
           {/* Utilisez le composant d'icône sélectionné */}
           {/* La classe 'text-accent' était spécifique à 'info' dans l'original. Souvent, la couleur de l'icône est gérée par la classe alert-* */}
