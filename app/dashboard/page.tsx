@@ -135,7 +135,7 @@ const DashboardPage = () => {
             <div className="grid md:grid-cols-3 gap-4">
               <DashboardCard
                 label="Total des depenses"
-                value={totalAmount !== null ? `${totalAmount} Da` : "N/A"}
+                value={totalAmount !== null ? `${formatCurrency(totalAmount)}` : "N/A"}
                 icon={<CircleDollarSignIcon />}
               />
               <DashboardCard
