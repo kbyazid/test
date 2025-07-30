@@ -182,7 +182,7 @@ const DashboardPage = () => {
                 </div>
                 <div className="mt-4 border-2 border-base-300 p-5 rounded-xl">
                   <h3 className="text-lg font-semibold mb-3">
-                    Derniers Transacttions
+                    Dernieres Depenses
                   </h3>
                   <ul className="divide-y divide-base-300">
                     {transactions.map((transaction) => (
