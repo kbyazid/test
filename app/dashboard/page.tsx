@@ -218,7 +218,7 @@ const DashboardPage = () => {
                     <ul className="divide-y divide-base-300">
                       {dailyExpenses.slice(0, 14).map((expense) => (
                         <li key={expense.date} className="flex justify-between items-center py-2">
-                          <span className="font-medium text-accent">
+                          <span className="font-bold text-accent">
                             {new Date(expense.date).toLocaleDateString('fr-FR', {
                               year: 'numeric',
                               month: 'long',
