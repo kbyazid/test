@@ -26,7 +26,7 @@ export function SearchInput({search}:{search?:string}) {
                             router.push(`/users?search=${event.target.value}`)
                          }}
                         placeholder="Search"
-                        defaultValue={search}  //Garde la valeur de la recherche dans l'input
+                        defaultValue={search || ""} //Garde la valeur de la recherche dans l'input
                     />
                 </div>
 
