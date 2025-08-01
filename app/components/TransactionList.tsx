@@ -162,7 +162,7 @@ const TransactionRow = ({
     transaction: Transaction,
 }) => {
     const isIncome = transaction.type === "income"
-    const amountClass = isIncome ? "text-green-600" : "text-red-600"
+    const amountClass = isIncome ? "text-green-600" : "text-sky-400"
     const amountSign = isIncome ? '+' : '-'
     const formattedAmount = formatCurrency(Math.abs(transaction.amount))
 

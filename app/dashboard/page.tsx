@@ -229,9 +229,23 @@ const DashboardPage = () => {
                             -{formatCurrency(expense.totalAmount)}
                           </span>
                         </li>
+                        
                       ))}
-                    </ul>
-                  )}
+                        {/* Ajout de la moyenne des dépenses par jour */}
+                        {dailyExpenses.length > 0 && (
+                          <li className="flex justify-between items-center py-2 font-bold text-info">
+                            <span>Moyenne dépensée:</span>
+                            <span className="text-lg">
+                              {formatCurrency(
+                                dailyExpenses
+                                  .slice(0, 14)
+                                  .reduce((sum, expense) => sum + expense.totalAmount, 0) / 14
+                              )}
+                            </span>
+                          </li>
+                        )}
+                      </ul>
+                    )}
                 </div>
               </div>
             </div>

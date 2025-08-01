@@ -17,7 +17,7 @@ export default async function Page({
 
 // Assurez-vous que 'page' est un nombre valide, par défaut 1
 const page = Number(pageParam) || 1;
-console.log('Page actuelle:', page);
+/* console.log('Page actuelle:', page); */
 
 // Assurez-vous que 'search' est un string valide, par défaut ""
 const search = String(searchParam) || "";
@@ -45,9 +45,6 @@ const users = await prisma.user.findMany({
   },
 });
 
-// Déterminer si les boutons Précédent et Suivant doivent être désactivés
-const hasPreviousPage = currentPage > 1;
-const hasNextPage = currentPage < totalPages;
   return (
     <Wrapper>
       <div className="space-y-6 mb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -64,39 +61,65 @@ const hasNextPage = currentPage < totalPages;
             <UserList users={users} />
 
         {/* Section de Pagination */}
-          <div className="flex justify-between items-center mt-8 w-full">
-            {/* Bouton Précédent */}
-            <Link
-              href={`/users?page=${currentPage - 1}${
-                search ? `&search=${encodeURIComponent(search)}` : ""
-              }`}
-              className={`btn btn-primary ${!hasPreviousPage ? 'btn-disabled opacity-50' : ''}`}
-              aria-disabled={!hasPreviousPage}
-              tabIndex={!hasPreviousPage ? -1 : undefined}
-            >
-              Précédent
-            </Link>
-
-            {/* Informations de pagination */}
-            <span className="text-lg font-semibold">
-              Page {currentPage} sur {totalPages}
-            </span>
-
-            {/* Bouton Suivant */}
-            <Link
-              href={`/users?page=${currentPage + 1}${
-                search ? `&search=${encodeURIComponent(search)}` : ""
-              }`}
-              className={`btn btn-primary ${!hasNextPage ? 'btn-disabled opacity-50' : ''}`}
-              aria-disabled={!hasNextPage}
-              tabIndex={!hasNextPage ? -1 : undefined}
-            >
-              Suivant
-            </Link>
-          </div>
+        <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            search={search}
+          />
         </div>
       </div>
     </Wrapper>
   );
 }
 
+// Composant interne pour les contrôles de pagination
+function PaginationControls({
+  currentPage,
+  totalPages,
+  search,
+}: {
+  currentPage: number;
+  totalPages: number;
+  search?: string;
+}) {
+  // Déterminer si les boutons doivent être désactivés
+  const hasPreviousPage = currentPage > 1;
+  const hasNextPage = currentPage < totalPages;
+
+  return (
+    <div className="flex justify-between items-center mt-8 w-full">
+      {/* Bouton Précédent */}
+      <Link
+        href={`/users?page=${currentPage - 1}${
+          search ? `&search=${encodeURIComponent(search)}` : ""
+        }`}
+        className={`btn btn-primary ${
+          !hasPreviousPage ? "btn-disabled opacity-50" : ""
+        }`}
+        aria-disabled={!hasPreviousPage}
+        tabIndex={!hasPreviousPage ? -1 : undefined}
+      >
+        Précédent
+      </Link>
+
+      {/* Informations de pagination */}
+      <span className="text-lg font-semibold">
+        Page {currentPage} sur {totalPages}
+      </span>
+
+      {/* Bouton Suivant */}
+      <Link
+        href={`/users?page=${currentPage + 1}${
+          search ? `&search=${encodeURIComponent(search)}` : ""
+        }`}
+        className={`btn btn-primary ${
+          !hasNextPage ? "btn-disabled opacity-50" : ""
+        }`}
+        aria-disabled={!hasNextPage}
+        tabIndex={!hasNextPage ? -1 : undefined}
+      >
+        Suivant
+      </Link>
+    </div>
+  );
+}
