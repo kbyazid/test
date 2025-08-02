@@ -114,7 +114,7 @@ export function SearchInput({ search }: SearchInputProps) {
             )}
           </div>
           {isPending && (
-            <div className="absolute top-full left-0 mt-1 text-sm text-gray-500">
+            <div className="absolute top-full left-0 mt-1 text-sm text-green-500">
               Recherche en cours...
             </div>
           )}

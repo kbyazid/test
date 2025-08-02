@@ -17,7 +17,7 @@ const UserList = ({ users }: { users: User[] }) => {
       </ol>
     </div> */}
       <div>
-        <ol className="list bg-base-100 rounded-box shadow-md">
+        <ol className="list bg-base-100 rounded-box shadow-md mt-4">
 
           <li className="p-4 pb-2 text-2xl opacity-60 tracking-wide">Liste des utilisateurs</li>
           {users.map((user) => (
