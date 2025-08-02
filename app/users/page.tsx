@@ -13,37 +13,40 @@ export default async function Page({
     const pages = (await searchParams).page
     const ITEMS_PER_PAGE = 3; // Nombre d'utilisateurs par page
     const pageParam = pages;
+
+    // Assurez-vous que 'page' est un nombre valide, par défaut 1
+    const page = Number(pageParam) || 1;
+
+    // Assurez-vous que 'search' est un string valide. S'il est undefined ou non-string, il devient une chaîne vide.
     const searchParam = (await searchParams).search;
+    const search = typeof searchParam === 'string' ? searchParam : '';
 
-// Assurez-vous que 'page' est un nombre valide, par défaut 1
-const page = Number(pageParam) || 1;
-/* console.log('Page actuelle:', page); */
+    // Construire la clause 'where' conditionnellement
+    const userWhereClause: { email?: { contains: string } } = {};
+    if (search !== "") {
+        userWhereClause.email = { contains: search };
+    }
 
-// Assurez-vous que 'search' est un string valide, par défaut ""
-const search = String(searchParam) || "";
+    // 1. Obtenir le nombre total d'utilisateurs pour la pagination
+    const totalUsers = await prisma.user.count({
+        where: userWhereClause // Utilisation de la clause 'where' conditionnelle
+    });
 
-// 1. Obtenir le nombre total d'utilisateurs pour la pagination
-const totalUsers = await prisma.user.count({
-    where: {
-        email: { contains: search} }
-});
+    // 2. Calculer le nombre total de pages
+    const totalPages = Math.ceil(totalUsers / ITEMS_PER_PAGE);
 
-// 2. Calculer le nombre total de pages
-const totalPages = Math.ceil(totalUsers / ITEMS_PER_PAGE);
+    // Assurez-vous que 'currentPage' est au moins 1 et inferieur ou egal a totalPages
+    const currentPage =  page <= totalPages  ? Math.max(1, page) : 1;
 
-// Assurez-vous que 'currentPage' est au moins 1 et inferieur ou egal a totalPages
-const currentPage =  page<= totalPages  ? Math.max(1, page) : 1
-
-// 3. Récupérer les utilisateurs pour la page actuelle
-const users = await prisma.user.findMany({
-  take: ITEMS_PER_PAGE,
-  skip: (currentPage - 1) * ITEMS_PER_PAGE,
-  where: {
-     email: { contains: search} },
-  orderBy: {
-    createdAt: 'desc', // Ou un autre champ pour un ordre cohérent
-  },
-});
+    // 3. Récupérer les utilisateurs pour la page actuelle
+    const users = await prisma.user.findMany({
+      take: ITEMS_PER_PAGE,
+      skip: (currentPage - 1) * ITEMS_PER_PAGE,
+      where: userWhereClause, // Utilisation de la clause 'where' conditionnelle
+      orderBy: {
+        createdAt: 'desc', // Ou un autre champ pour un ordre cohérent
+      },
+    });
 
   return (
     <Wrapper>
@@ -55,7 +58,7 @@ const users = await prisma.user.findMany({
                 <p className="text-muted-foreground">Nombre total d&apos;utilisateurs : {totalUsers}</p>
             </div>
         {/* Section Recherche et ajout */}
-            <SearchInput search={search}/>
+        <SearchInput search={search} />
   
         {/* La liste des utilisateurs rendue par UserList */}
             <UserList users={users} />
@@ -80,7 +83,7 @@ function PaginationControls({
 }: {
   currentPage: number;
   totalPages: number;
-  search?: string;
+  search?: string; // search peut être une chaîne vide, ce qui est géré par Link
 }) {
   // Déterminer si les boutons doivent être désactivés
   const hasPreviousPage = currentPage > 1;

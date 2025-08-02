@@ -93,7 +93,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                                                 </div>
                                                 <span
                                                     className={
-                                                        transaction.type === "income" ? "text-green-500" : "text-red-500"
+                                                        transaction.type === "income" ? "text-green-500" : "text-sky-600"
                                                     }
                                                 >
                                                     {transaction.type === "income" ? "+" : "-"}
