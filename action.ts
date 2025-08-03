@@ -44,7 +44,7 @@ export interface DailyExpense {
       const dailyExpenses: DailyExpense[] = Array.from(dailyExpensesMap.entries())
         .map(([date, totalAmount]) => ({ date, totalAmount }))
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Tri par date décroissante
-  
+      console.log(dailyExpenses)
       return dailyExpenses;
   
     } catch (error) {

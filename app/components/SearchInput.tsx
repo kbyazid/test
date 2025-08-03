@@ -72,7 +72,7 @@ export function SearchInput({ search }: SearchInputProps) {
   }
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mt-6">
+    <div className="bg-base-800 p-4 rounded-lg shadow-sm border border-gray-200 mt-6">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-md">
           <div className="relative">
@@ -91,7 +91,7 @@ export function SearchInput({ search }: SearchInputProps) {
               placeholder="Rechercher par email..."
               value={searchValue}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 bg-gray-50 focus:bg-white"
+              className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 bg-base-50 focus:bg-base-200"
               disabled={isPending}
             />
             {searchValue && (
@@ -114,7 +114,7 @@ export function SearchInput({ search }: SearchInputProps) {
             )}
           </div>
           {isPending && (
-            <div className="absolute top-full left-0 mt-1 text-sm text-green-500">
+            <div className="absolute top-full left-0 mt-0 text-sm text-green-500">
               Recherche en cours...
             </div>
           )}

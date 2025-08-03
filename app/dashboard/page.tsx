@@ -107,10 +107,9 @@ const DashboardPage = () => {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
-
+  console.log(dailyExpenses)
   return (
     <Wrapper>
       <div className="space-y-6 mb-2 flex flex-row justify-between gap-4">
