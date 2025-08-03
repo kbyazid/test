@@ -109,7 +109,7 @@ const DashboardPage = () => {
     };
     fetchData();
   }, []);
-  console.log(dailyExpenses)
+ /*  console.log(dailyExpenses) */
   return (
     <Wrapper>
       <div className="space-y-6 mb-2 flex flex-row justify-between gap-4">
@@ -215,7 +215,7 @@ const DashboardPage = () => {
                     <p className="text-gray-500">Aucune dépense enregistrée par journée.</p>
                   ) : (
                     <ul className="divide-y divide-base-300">
-                      {dailyExpenses.slice(0, 14).map((expense) => (
+                      {dailyExpenses.slice(0, 11).map((expense) => (
                         <li key={expense.date} className="flex justify-between items-center py-2">
                           <span className="font-bold text-accent">
                             {new Date(expense.date).toLocaleDateString('fr-FR', {
@@ -237,8 +237,8 @@ const DashboardPage = () => {
                             <span className="text-lg">
                               {formatCurrency(
                                 dailyExpenses
-                                  .slice(0, 14)
-                                  .reduce((sum, expense) => sum + expense.totalAmount, 0) / 14
+                                  .slice(0, 11)
+                                  .reduce((sum, expense) => sum + expense.totalAmount, 0) / 11
                               )}
                             </span>
                           </li>

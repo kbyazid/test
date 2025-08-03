@@ -13,7 +13,8 @@ import {
     Send,
     Search, 
     Trash, 
-    View 
+    View, 
+    Plus
   } from 'lucide-react'
   import Link from 'next/link'
 import DashboardCard from '../components/DashboardCard';
@@ -190,7 +191,7 @@ const TransactionPage = () => {
     (transaction.budgetName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
   )
 
-  /* showNotification("Test notification.", "error", "top-center") */
+ /*  showNotification("Test notification.", "error", "top-center")  genere une erreur de render*/
   // Rendu
   return (
     <Wrapper >
@@ -233,8 +234,9 @@ const TransactionPage = () => {
         </div>
         <button
           onClick={() => (document.getElementById('add_income_modal') as HTMLDialogElement)?.showModal()}
-          className='btn mt-2'
+          className='btn btn-primary flex items-center gap-2 bg-base-600 hover:bg-base-700 px-6 py-3 rounded-lg transition-all duration-200 font-medium whitespace-nowrap shadow-sm hover:shadow-md transform hover:-translate-y-0.5'
         >
+          <Plus className="h-5 w-5" />
           Ajouter une recette
         </button>
       </div>
@@ -479,7 +481,7 @@ const TransactionRow = ({
     onDelete: (id: string) => void
   }) => {
     const isIncome = transaction.type === "income"
-    const amountClass = isIncome ? "text-green-600" : "text-red-600"
+    const amountClass = isIncome ? "text-green-600" : "text-sky-600"
     const amountSign = isIncome ? '+' : '-'
     const formattedAmount = formatCurrency(Math.abs(transaction.amount))
     
@@ -562,7 +564,7 @@ const TransactionRow = ({
     <button
       title="Supprimer"
       onClick={onClick}
-      className='btn btn-sm btn-ghost text-red-500 hover:bg-red-100'
+      className='btn btn-sm btn-ghost text-red-300 hover:bg-red-100'
     >
       <Trash className='w-4 h-4' />
     </button>

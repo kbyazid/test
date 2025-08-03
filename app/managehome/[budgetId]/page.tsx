@@ -96,7 +96,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                                                         transaction.type === "income" ? "text-green-500" : "text-sky-600"
                                                     }
                                                 >
-                                                    {transaction.type === "income" ? "+" : "-"}
+                                                    {/* {transaction.type === "income" ? "+" : "-"} */}
                                                     {formatCurrency(transaction.amount)}
                                                     {/* {transaction.amount.toFixed(2)} Da */}
                                                 </span>

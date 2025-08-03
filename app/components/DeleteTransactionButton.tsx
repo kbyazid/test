@@ -55,7 +55,7 @@ export default function DeleteTransactionButton({ transactionId, onDeleteSuccess
       <button
         title="Supprimer la dépense"
         onClick={() => (document.getElementById(`delete_transaction_${transactionId}`) as HTMLDialogElement)?.showModal()}
-        className="btn btn-sm btn-ghost text-red-500 hover:bg-red-100"
+        className="btn btn-sm btn-ghost text-red-300 hover:bg-red-100"
       >
         <Trash className="w-4 h-4" />
       </button>

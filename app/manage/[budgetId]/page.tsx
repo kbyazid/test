@@ -161,7 +161,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                         {/* <td className='text-lg md:text-3xl'>{transaction.emoji}</td> */}
                         <td>
                           <div className="badge badge-accent badge-xs md:badge-sm">
-                            - {formatCurrency(transaction.amount)}{/* {transaction.amount} Da */}</div>
+                            {formatCurrency(transaction.amount)}{/* {transaction.amount} Da */}</div>
                         </td>
                         <td>{transaction.description}</td>
 

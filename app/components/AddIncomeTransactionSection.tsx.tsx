@@ -131,7 +131,7 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
 
       {/* Nouveau bouton d'actualisation */}
       <button
-          className="btn btn-outline btn-info" // Style de bouton Tailwind/DaisyUI
+          className="btn btn-outline btn-info flex items-center gap-2 bg-base-600 hover:bg-base-700 px-6 py-3 rounded-lg transition-all duration-200 font-medium whitespace-nowrap shadow-sm hover:shadow-md transform hover:-translate-y-0.5" // Style de bouton Tailwind/DaisyUI
           onClick={handleRefreshClick}
           disabled={isRefreshing} // Désactive le bouton pendant l'actualisation
         >
@@ -144,7 +144,7 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
         </button>
         {/* Bouton d'ajout de recette */}
       <button
-        className="btn btn-primary"
+        className="btn btn-primary flex items-center gap-2 bg-base-600 hover:bg-base-700 px-6 py-3 rounded-lg transition-all duration-200 font-medium whitespace-nowrap shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
         onClick={() => openModal('add_income_modal')}
         disabled={isAdding} // Désactive le bouton pendant l'ajout
       >

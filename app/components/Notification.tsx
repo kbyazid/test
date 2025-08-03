@@ -67,7 +67,7 @@ const Notification: React.FC<NotificationProps> = ({ message, onclose, type, pos
 
   return (
     // Div conteneur principal pour la position du toast
-    <div className={`toast ${positionClassName}`}>
+    <div className={`toast ${positionClassName} inset-0 bg-opacity-25 z-40 pointer-events-none`}>
       {/* Div pour le style de l'alerte, l'ombre, la marge interne, etc. */}
       {/* Ajout de la classe 'opacity-90' pour la transparence (ajustez la valeur si nécessaire) */}
       <div className={`alert ${alertTypeClassName} mt-6 p-2 text-xl shadow-lg opacity-70`}>
