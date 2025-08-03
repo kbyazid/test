@@ -4,7 +4,7 @@ import { Transaction } from '@/type'
 import Wrapper from '../components/Wrapper'
 import React, {  useCallback, useEffect, useState } from 'react'
 import { addIncomeTransaction, deleteTransaction,  getTotalTransactionAmountByEmailEffacer,  getTransactionsByPeriodEffacer } from '@/action';
-import Notification, { NotificationType, NotificationPosition } from '@/app/components/Notification'
+import Notification, { NotificationType, NotificationPosition, NotificationDetails } from '@/app/components/Notification'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {  
     ArrowDownCircle,
@@ -24,11 +24,11 @@ import TransactionCard from '../components/TransactionCard';
 // Types et interfaces
 type Period = 'last7' | 'last30' | 'last90' | 'last365' | 'all' 
 
-interface NotificationDetails {
+/* interface NotificationDetails {
   message: string;
   type: NotificationType;
   position: NotificationPosition;
-}
+} */
 
 type Totals = {
   balance: number

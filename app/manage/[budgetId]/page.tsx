@@ -206,6 +206,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                           </div>                       
                         </td>
                       </tr>
+                      
                     ))}
                   </tbody>
                 </table> 

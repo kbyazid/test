@@ -36,13 +36,13 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
   const [amount, setAmount] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false); // Nouvel état pour le bouton d'actualisation
-  const [notification, setNotification] = useState<{ message: string; type: NotificationType; position: NotificationPosition } | null>(null);
-
+  const [notification, setNotification] = useState<{ message: string; type: NotificationType; position: NotificationPosition; persist?:boolean; opaque?:boolean } | null>(null);
+  
   // Notification debounced
   const showNotification =(
-    (message: string, type: NotificationType, position: NotificationPosition) => {
-      setNotification({ message, type, position });
-      setTimeout(() => setNotification(null), 3000);
+    (message: string, type: NotificationType, position: NotificationPosition, persist?: boolean, opaque?: boolean, ) => {
+      setNotification({ message, type, position, persist, opaque });
+      /* setTimeout(() => setNotification(null), 3000); */
     });
 
   const handleCloseNotification = () => setNotification(null);
@@ -103,7 +103,7 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
     setIsRefreshing(true);
     try {
       await revalidateTransactionsPage(); // Appel de la Server Action
-      showNotification('Données actualisées avec succès !', 'success', 'top-center');
+      showNotification('Données actualisées avec succès !', 'success', 'center-center');
       // Pas besoin de router.refresh() ici car la revalidation gère l'invalidation du cache
       // et le Server Component (TransactionList) sera re-rendu avec les données fraîches.
     } catch (error) {
@@ -123,6 +123,8 @@ const AddIncomeTransactionSection: React.FC<AddIncomeTransactionSectionProps> = 
           message={notification.message}
           type={notification.type}
           position={notification.position}
+          persist={notification.persist}
+          opaque={notification.opaque}
           onclose={handleCloseNotification}
         />
       )}
