@@ -334,7 +334,7 @@ return (
 
     
      {/* Version search operationnelle lui manque l initialisation rounded-xl shadow-md */}   
-     <div className="card w-full bg-base-150 card-md shadow-md rounded-xl ">
+     <div className="card w-full bg-base-150 card-md shadow-md rounded-xl border-2 border-gray-300 ">
   <div className="card-body">
     <h2 className="card-title text-xl font-bold">Recherche</h2>
     <div className="flex flex-col md:flex-row gap-4 items-center mb-4">
