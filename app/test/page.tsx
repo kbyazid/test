@@ -16,8 +16,7 @@ import {
     View, 
     Plus,
     Calculator,
-    X
-  } from 'lucide-react'
+  } from 'lucide-react'   /* X: a joute */
   import Link from 'next/link'
 import DashboardCard from '../components/DashboardCard';
 import TransactionCard from '../components/TransactionCard';
@@ -318,132 +317,188 @@ return (
       {/* ici a mettre la version search */}
       {/* </div> */}
 
-     {/* Version search operationnelle lui manque lq loupe */}
-     {/*  <div className="relative w-full md:flex-1">
+     {/* Version search operationnelle seulement la recherche  */}
+     {/* search input 1 */}
+{/*   <div className="input relative w-full md:flex-1">
           
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-          <Search className="absolute left-2.5 top-3.5 h-4 w-4 text-muted-foreground" />
+          
           <input
             type="search"
             value={searchQuery}
             placeholder="Rechercher par description ou budget..."
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="input input-bordered w-full pl-8"
+            className='pl-6'
           />
-        </div> */}
+      </div>  */}
 
-    
-     {/* Version search operationnelle lui manque l initialisation rounded-xl shadow-md */}   
-     <div className="card w-full bg-base-150 card-md shadow-md rounded-xl border-2 border-gray-300 ">
-  <div className="card-body">
-    <h2 className="card-title text-xl font-bold">Recherche</h2>
-    <div className="flex flex-col md:flex-row gap-4 items-center mb-4">
-      <div className="relative w-full flex-1">
-        <div className="relative">
-          <button
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+      {/* search input 2 */}
+{/*   <div className="w-full md:flex-1 mt-4">
+      <label className="input">
+        <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <g
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            strokeWidth="2.5"
+            fill="none"
+            stroke="currentColor"
           >
-            <Search className="h-4 w-4" />
-          </button>
-
-          <input
-            type="text"
-            placeholder="Rechercher par email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 bg-base-50 focus:bg-base-200"
-          />
-
-          {searchQuery && (
-            <button
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-      </div>
-
-
-      <div className='w-full md:w-auto'>
-        <select
-          className='input input-bordered input-md w-full'
-          value={currentPeriod}
-          onChange={(e) => fetchTransactions(e.target.value as Period)}
-        >
-          <option value="last7">Derniers 7 jours</option>
-          <option value="last30">Derniers 30 jours</option>
-          <option value="last90">Derniers 90 jours</option>
-          <option value="last365">Derniers 365 jours</option>
-          <option value="all">Toutes les transactions</option>
-        </select>
-      </div>
-
-    </div>
-
-    <div className="justify-center card-actions">
-    <div>
-        <DashboardCard
-            label= {filterLabel}
-            value={""}
-            icon={<Calculator className= "text-blue-500 w-8 h-8" />}
-          />
-      </div>
-    </div>
-  </div>
-</div>
-   {/*  <div className="flex flex-col md:flex-row gap-4 items-center mb-4">
-      <div className="relative w-full flex-1">
-        <div className="relative">
-          <button
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-gray-100"
-          >
-            <Search className="h-4 w-4" />
-          </button>
-
-          <input
-            type="text"
-            placeholder="Rechercher par email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 bg-base-50 focus:bg-base-200"
-          />
-
-          {searchQuery && (
-            <button
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-      </div>
-
-
-      <div className='w-full md:w-auto'>
-        <select
-          className='input input-bordered input-md w-full'
-          value={currentPeriod}
-          onChange={(e) => fetchTransactions(e.target.value as Period)}
-        >
-          <option value="last7">Derniers 7 jours</option>
-          <option value="last30">Derniers 30 jours</option>
-          <option value="last90">Derniers 90 jours</option>
-          <option value="last365">Derniers 365 jours</option>
-          <option value="all">Toutes les transactions</option>
-        </select>
-      </div>
-
-    </div> */}
-
-    
-{/*       <div>
-        <DashboardCard
-            label= {filterLabel}
-            value={""}
-            icon={<Calculator className= "text-blue-500 w-8 h-8" />}
-          />
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </g>
+        </svg>
+        <input
+          type="search"
+          value={searchQuery}
+          placeholder="Rechercher par description ou budget..."
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </label>
       </div> */}
+
+      {/* search input 3 */}
+     {/*  <div className="relative w-full flex-1">
+            <div className="relative">
+              <button
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+              >
+                <Search className="h-4 w-4" />
+              </button>
+
+              <input
+                type="text"
+                placeholder="Rechercher par email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 bg-base-50 focus:bg-base-200"
+              />
+
+              {searchQuery && (
+                <button
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+      </div> */}
+    
+     {/* Version search ameliore operationnelle   */}   
+    <div className="card w-full bg-base-150 card-md shadow-md rounded-xl border-2 border-gray-300 ">
+      <div className="card-body">
+        <h2 className="card-title text-xl font-bold">Recherche</h2>
+        <div className="flex flex-col md:flex-row gap-4 items-center mb-4">
+          <div className="input relative w-full md:flex-1">
+
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+
+            <input
+              type="search"
+              value={searchQuery}
+              placeholder="Rechercher par description ou budget..."
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className='pl-6'
+            />
+          </div>
+
+
+          {/* <div className='w-full md:w-auto'>
+            <select
+              className='input input-bordered input-md w-full'
+              value={currentPeriod}
+              onChange={(e) => fetchTransactions(e.target.value as Period)}
+            >
+              <option value="last7">Derniers 7 jours</option>
+              <option value="last30">Derniers 30 jours</option>
+              <option value="last90">Derniers 90 jours</option>
+              <option value="last365">Derniers 365 jours</option>
+              <option value="all">Toutes les transactions</option>
+            </select>
+          </div> */}
+
+          <div className='w-full md:w-auto'>
+            <select
+              className='select w-full'
+              value={currentPeriod}
+              onChange={(e) => fetchTransactions(e.target.value as Period)}
+            >
+              <option value="last7">Derniers 7 jours</option>
+              <option value="last30">Derniers 30 jours</option>
+              <option value="last90">Derniers 90 jours</option>
+              <option value="last365">Derniers 365 jours</option>
+              <option value="all">Toutes les transactions</option>
+            </select>
+          </div>
+
+
+
+        </div>
+
+        <div className="justify-center card-actions">
+          <div>
+            <DashboardCard
+              label={filterLabel}
+              value={""}
+              icon={<Calculator className="text-blue-500 w-8 h-8" />}
+            />
+          </div>
+        </div>
+      </div>
+    </div> 
+
+    {/* Version search operationnelle simple lui manque l initialisation  */}
+ {/*    <div className="flex flex-col md:flex-row gap-4 items-center mb-4">
+      <div className="relative w-full flex-1">
+        <div className="relative">
+          <button
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+          >
+            <Search className="h-4 w-4" />
+          </button>
+
+          <input
+            type="text"
+            placeholder="Rechercher par email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 bg-base-50 focus:bg-base-200"
+          />
+
+          {searchQuery && (
+            <button
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+
+      <div className='w-full md:w-auto'>
+        <select
+          className='input input-bordered input-md w-full'
+          value={currentPeriod}
+          onChange={(e) => fetchTransactions(e.target.value as Period)}
+        >
+          <option value="last7">Derniers 7 jours</option>
+          <option value="last30">Derniers 30 jours</option>
+          <option value="last90">Derniers 90 jours</option>
+          <option value="last365">Derniers 365 jours</option>
+          <option value="all">Toutes les transactions</option>
+        </select>
+      </div>
+
+    </div>  */}
+
+    
+{/*<div>
+        <DashboardCard
+            label= {filterLabel}
+            value={""}
+            icon={<Calculator className= "text-blue-500 w-8 h-8" />}
+          />
+    </div> */}
      
 
 {/* Transactions List */}

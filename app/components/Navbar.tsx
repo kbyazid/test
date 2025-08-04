@@ -13,7 +13,7 @@ const Navbar = () => {
     const html = document.querySelector("html");
     if (html) {
          const currentTheme = html.getAttribute("data-theme");
-    html.setAttribute("data-theme", currentTheme === "dark" ? "cupcake" : "dark");
+    html.setAttribute("data-theme", currentTheme === "dark" ? "caramellatte" : "dark");
     }
  
   };

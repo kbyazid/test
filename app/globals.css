@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: light --default, dark --prefersdark, cupcake;
+  themes: light --default, dark --prefersdark, caramellatte;
 }
 .gradient-bg {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
