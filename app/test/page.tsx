@@ -2,7 +2,7 @@
 
 import { Transaction } from '@/type'
 import Wrapper from '../components/Wrapper'
-import React, {  useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { addIncomeTransaction, deleteTransaction,  getTotalTransactionAmountByEmailEffacer,  getTransactionsByPeriodEffacer } from '@/action';
 import Notification, { NotificationType, NotificationPosition, NotificationDetails } from '@/app/components/Notification'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -14,7 +14,8 @@ import {
     Search, 
     Trash, 
     View, 
-    Plus
+    Plus,
+    Calculator
   } from 'lucide-react'
   import Link from 'next/link'
 import DashboardCard from '../components/DashboardCard';
@@ -50,15 +51,18 @@ const TransactionPage = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPeriod, setCurrentPeriod] = useState<Period>('all')
 
-  // Fonctions utilitaires
- 
-  const showNotification = (message: string, type: NotificationType, position: NotificationPosition) => {
-    setNotification({ message, type, position });
-  };
+ /*  const [filteredCount, setFilteredCount] = useState(0);
+  const [filteredTotal, setFilteredTotal] = useState(0); */
 
-  const handleCloseNotification = () => {
-    setNotification(null);
-  };
+  // Fonctions utilitaires 
+   // Notification 
+   const showNotification =(
+     (message: string, type: NotificationType, position: NotificationPosition, persist?: boolean, opaque?: boolean, ) => {
+       setNotification({ message, type, position, persist, opaque });
+       /* setTimeout(() => setNotification(null), 3000); */
+     });
+ 
+   const handleCloseNotification = () => setNotification(null);
 
   const closeModal = (modalId: string) => {
     const modal = document.getElementById(modalId) as HTMLDialogElement | null
@@ -72,10 +76,12 @@ const TransactionPage = () => {
     setLoading(true)
     try {
       const data = await getTransactionsByPeriodEffacer("tlemcencrma20@gmail.com",period);
-      console.log("📦 Données reçues pour la période:", period, data); // ← AJOUT ICI
-      console.log(`🔢 ${data?.length ?? 0} transactions récupérées`);
+      /* console.log("📦 Données reçues pour la période:", period, data); */ // ← AJOUT ICI
+      /* console.log(`🔢 ${data?.length ?? 0} transactions récupérées`); */
 
       setTransactions(data|| []); // Utilisez || [] pour gérer undefined
+      
+
       setCurrentPeriod(period)
       /* showNotification("Transactions chargées", "success", "top-center"); */
     } catch (error) {
@@ -86,8 +92,7 @@ const TransactionPage = () => {
     }
   };
 
-  const fetchTotals = async () => {
-        
+  const fetchTotals = async () => {     
     try {
       const result = await getTotalTransactionAmountByEmailEffacer()
       setTotals(result || null); // Utilisez || null pour gérer le cas où 'result' est undefined
@@ -106,7 +111,6 @@ const TransactionPage = () => {
   
   const handleAddTransaction = async () => {
     /* if (!user?.primaryEmailAddress?.emailAddress) return */
-    
     try {
       setIsAdding(true)
       const MIN_LOADING_TIME = 500
@@ -137,9 +141,6 @@ const TransactionPage = () => {
       ])
 
       // Fermeture modale
-    /*   const modal = document.getElementById("add_income_modal") as HTMLDialogElement | null
-      modal?.close() */
-
       closeModal("add_income_modal")
 
       // Minimum loading time for better UX
@@ -190,23 +191,56 @@ const TransactionPage = () => {
     transaction.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (transaction.budgetName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
   )
+  
+  //setFilteredCount(filteredTransactions.length);
+  
+  /* const sum = filteredTransactions.reduce((acc, t) => acc + t.amount, 0); */
+  const sum = filteredTransactions.reduce((acc, t) => {
+    return t.type === 'income' ? acc + t.amount : acc - t.amount;
+  }, 0);
+  const filterLabel = (
+    <>
+    <span className="text-blue-600 font-semibold">
+      Résultat du filtre : {" "}
+      </span>
+       {filteredTransactions.length} transactions –{" "}
+      <span className="text-blue-600 font-semibold">
+        Total : {" "}
+      </span>
+      {formatCurrency(sum)}
+    </>
+  );
+  
+  /* const filterLabel =`Résultat du filtre : ${filteredTransactions.length} transactions   – Total : ${formatCurrency(sum)}` */
+  /* setFilteredTotal(sum);*/
+  /* console.log("Totaux :", filteredTransactions.length, sum);  */
+
+  /*       showNotification(
+        `Résultat : ${filteredCount} transactions – Total : ${formatCurrency(filteredTotal)}`,
+        'info',
+        'top-center',
+        true, 
+        true  // ← nouveauté
+      ); */
+  
 
  /*  showNotification("Test notification.", "error", "top-center")  genere une erreur de render*/
   // Rendu
-  return (
-    <Wrapper >
-        {/* Notification */}
+return (
+  <Wrapper >
+      {/* Composant Notification */}
       {notification && (
         <Notification
           message={notification.message}
-          onclose={handleCloseNotification}
           type={notification.type}
           position={notification.position}
+          persist={notification.persist}
+          opaque={notification.opaque}
+          onclose={handleCloseNotification}
         />
       )}
 
-       {/* Modals */}
-          
+{/* Modals */}   
     <DeleteTransactionModal 
         onConfirm={handleDeleteTransaction}
         onCancel={() => {
@@ -214,9 +248,8 @@ const TransactionPage = () => {
             closeModal("delete_transaction_modal")
             /* const modal = document.getElementById("delete_transaction_modal") as HTMLDialogElement | null
             modal?.close() */
-}}
+        }}
     />  
-
     <AddIncomeModal 
         description={description}
         amount={amount}
@@ -241,18 +274,16 @@ const TransactionPage = () => {
         </button>
       </div>
 
-      {/* Cards */}
+{/* Cards */}
       <div className="grid md:grid-cols-3 gap-4 mb-4">
         <DashboardCard
           label="Solde"
           value={totals?.balance != null ? formatCurrency(totals.balance) : "N/A"}
           icon={<CircleDollarSignIcon />}
         />
-{/*         <DashboardCard
-          label="Recettes"
-          value={totals?.totalIncome != null ? formatCurrency(totals.totalIncome) : "N/A"}
-          icon={<ArrowDownCircle className="text-blue-600 w-8 h-8" />}
-        />
+         
+      
+{/*
         <DashboardCard
           label="Dépenses"
           value={totals?.totalExpenses != null ? formatCurrency(totals.totalExpenses) : "N/A"}
@@ -273,7 +304,7 @@ const TransactionPage = () => {
         />
       </div>
 
-      {/* Search and Filter */}
+{/* Search and Filter */}
       <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
         <div className="relative w-full md:flex-1">
           <Search className="absolute left-2.5 top-3.5 h-4 w-4 text-muted-foreground" />
@@ -299,8 +330,15 @@ const TransactionPage = () => {
           </select>
         </div>
       </div>
+      <div>
+      <DashboardCard
+          label= {filterLabel}
+          value={""}
+          icon={<Calculator className= "text-blue-500 w-8 h-8" />}
+        />
+      </div>
 
-      {/* Transactions List */}
+{/* Transactions List */}
       {loading ? (
         <LoadingSpinner />
       ) : filteredTransactions.length === 0 ? (
@@ -560,7 +598,7 @@ const TransactionRow = ({
     )
   }
 
-  const DeleteButton = ({ onClick }: { onClick: () => void }) => (
+const DeleteButton = ({ onClick }: { onClick: () => void }) => (
     <button
       title="Supprimer"
       onClick={onClick}
@@ -570,7 +608,7 @@ const TransactionRow = ({
     </button>
   )
   
-  const ViewButton = ({ budgetId }: { budgetId: string }) => (
+const ViewButton = ({ budgetId }: { budgetId: string }) => (
     <Link 
       href={`/manage/${budgetId}`} 
       title="Voir le budget associé" 

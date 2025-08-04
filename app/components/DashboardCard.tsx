@@ -1,7 +1,7 @@
 type DashboardCardProps = {
-    label: string;
+    label: React.ReactNode;
     value: string | number;
-    icon: React.ReactNode;
+    icon?: React.ReactNode;
     
   };
 
