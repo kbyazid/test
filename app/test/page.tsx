@@ -15,7 +15,8 @@ import {
     Trash, 
     View, 
     Plus,
-    Calculator
+    Calculator,
+    X
   } from 'lucide-react'
   import Link from 'next/link'
 import DashboardCard from '../components/DashboardCard';
@@ -200,14 +201,22 @@ const TransactionPage = () => {
   }, 0);
   const filterLabel = (
     <>
-    <span className="text-blue-600 font-semibold">
-      Résultat du filtre : {" "}
-      </span>
-       {filteredTransactions.length} transactions –{" "}
+    <div className="grid md:grid-cols-2 font-bold text-accent gap-4">
+    <div>
       <span className="text-blue-600 font-semibold">
-        Total : {" "}
+        Résultat du filtre : {" "}
+      </span>
+      {filteredTransactions.length} transactions {" "}
+      
+    </div>
+    <div>
+      <span className="text-blue-600 font-semibold">
+      Total : {" "}
       </span>
       {formatCurrency(sum)}
+    </div>
+    </div>
+      
     </>
   );
   
@@ -305,8 +314,10 @@ return (
       </div>
 
 {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-        <div className="relative w-full md:flex-1">
+      {/* <div className="flex flex-col md:flex-row items-center gap-4 mb-6"> */}
+       {/*  <div className="relative w-full md:flex-1">
+          
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
           <Search className="absolute left-2.5 top-3.5 h-4 w-4 text-muted-foreground" />
           <input
             type="search"
@@ -315,21 +326,55 @@ return (
             onChange={(e) => setSearchQuery(e.target.value)}
             className="input input-bordered w-full pl-8"
           />
-        </div>
-        <div className='w-full md:w-auto flex justify-end'>
-          <select
-            className='input input-bordered input-md w-full md:w-auto'
-            value={currentPeriod}
-            onChange={(e) => fetchTransactions(e.target.value as Period)}
-          >
-            <option value="last7">Derniers 7 jours</option>
-            <option value="last30">Derniers 30 jours</option>
-            <option value="last90">Derniers 90 jours</option>
-            <option value="last365">Derniers 365 jours</option>
-            <option value="all">Toutes les transactions</option>
-          </select>
-        </div>
-      </div>
+        </div> */}
+       
+<div className="flex flex-col md:flex-row gap-4 items-center mb-4">
+  
+ 
+  <div className="relative w-full flex-1">
+    <div className="relative">
+      <button
+        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+      >
+        <Search className="h-4 w-4" />
+      </button>
+
+      <input
+        type="text"
+        placeholder="Rechercher par email..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 bg-base-50 focus:bg-base-200"
+      />
+      
+      {searchQuery && (
+        <button
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  </div>
+
+  
+  <div className='w-full md:w-auto'>
+    <select
+      className='input input-bordered input-md w-full'
+      value={currentPeriod}
+      onChange={(e) => fetchTransactions(e.target.value as Period)}
+    >
+      <option value="last7">Derniers 7 jours</option>
+      <option value="last30">Derniers 30 jours</option>
+      <option value="last90">Derniers 90 jours</option>
+      <option value="last365">Derniers 365 jours</option>
+      <option value="all">Toutes les transactions</option>
+    </select>
+  </div>
+
+</div>
+      {/* </div> */}
+
       <div>
       <DashboardCard
           label= {filterLabel}
