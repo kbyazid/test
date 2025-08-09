@@ -162,8 +162,10 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                       <tr key={transaction.id}>
                         {/* <td className='text-lg md:text-3xl'>{transaction.emoji}</td> */}
                         <td>
-                          <div className="badge badge-accent badge-xs md:badge-sm">
-                            {formatCurrency(transaction.amount)}{/* {transaction.amount} Da */}</div>
+                          {/* badge-accent badge-xs md:badge-sm */}
+                          <div className="text-accent">
+                            {formatCurrency(transaction.amount)}{/* {transaction.amount} Da */}
+                          </div>
                         </td>
                         <td>{transaction.description}</td>
 
@@ -175,7 +177,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                           {transaction.createdAt.toLocaleTimeString("fr-FR", {
                             hour: "2-digit",
                             minute: "2-digit",
-                            second: "2-digit"
+                            second: "2-digit",
                           })}
                         </td>
 

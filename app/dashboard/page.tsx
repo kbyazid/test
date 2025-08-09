@@ -109,7 +109,15 @@ const DashboardPage = () => {
     };
     fetchData();
   }, []);
+
+
  /*  console.log(dailyExpenses) */
+
+      const daysToShow = Math.min(dailyExpenses.length, 15);
+      const expensesSlice = dailyExpenses.slice(0, daysToShow);
+      const totalSum = expensesSlice.reduce((sum, expense) => sum + expense.totalAmount, 0);
+      const average = totalSum / daysToShow;
+
   return (
     <Wrapper>
       <div className="space-y-6 mb-2 flex flex-row justify-between gap-4">
@@ -208,14 +216,15 @@ const DashboardPage = () => {
                 <div className="mt-8 border-2 border-base-300 p-5 rounded-xl">
                   {/* <div className="flex justify-center items-center py-2"> */}
                   <h3 className="text-lg font-bold mb-3 text-center">
-                    Récapitulatif des Dépenses par Journée
+                    Récapitulatif des Dépenses par Journée (Derniere quinzaine)
                   </h3>
                  {/*  </div> */}
                   {dailyExpenses.length === 0 ? (
                     <p className="text-gray-500">Aucune dépense enregistrée par journée.</p>
                   ) : (
                     <ul className="divide-y divide-base-300">
-                      {dailyExpenses.slice(0, 11).map((expense) => (
+                      
+{/*                  {dailyExpenses.slice(0, 15).map((expense) => (
                         <li key={expense.date} className="flex justify-between items-center py-2">
                           <span className="font-bold text-accent">
                             {new Date(expense.date).toLocaleDateString('fr-FR', {
@@ -227,22 +236,43 @@ const DashboardPage = () => {
                           <span className="text-lg font-bold">
                             -{formatCurrency(expense.totalAmount)}
                           </span>
-                        </li>
-                        
-                      ))}
+                        </li>       
+                      ))} */}
+                          {expensesSlice.map((expense) => (
+                            <li key={expense.date} className="flex justify-between items-center py-2">
+                              <span className="font-bold text-accent">
+                                {new Date(expense.date).toLocaleDateString('fr-FR', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                })}
+                              </span>
+                              <span className="text-lg font-bold">
+                                -{formatCurrency(expense.totalAmount)}
+                              </span>
+                            </li>
+                          ))}
+
                         {/* Ajout de la moyenne des dépenses par jour */}
-                        {dailyExpenses.length > 0 && (
+
+{/*                     {dailyExpenses.length > 0 && (
                           <li className="flex justify-between items-center py-2 font-bold text-info">
                             <span>Moyenne dépensée:</span>
                             <span className="text-lg">
                               {formatCurrency(
                                 dailyExpenses
-                                  .slice(0, 11)
-                                  .reduce((sum, expense) => sum + expense.totalAmount, 0) / 11
+                                  .slice(0, 15)
+                                  .reduce((sum, expense) => sum + expense.totalAmount, 0) / 15
                               )}
                             </span>
                           </li>
-                        )}
+                        )} */}
+
+                          <li className="flex justify-between items-center py-2 font-bold text-info">
+                            <span>Moyenne dépensée:</span>
+                            <span className="text-lg">{formatCurrency(average)}</span>
+                          </li>
+
                       </ul>
                     )}
                 </div>
