@@ -87,8 +87,8 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                                                             day: '2-digit',   // Jour sur 2 chiffres (ex: 01, 15)
                                                             month: '2-digit', // Mois sur 2 chiffres (ex: 01, 12)
                                                             year: 'numeric'   // Année sur 4 chiffres (ex: 2023)
-                                                        })} -{" "}
-                                                        {transaction.type === "income" ? "Revenu" : "Dépense"}
+                                                        })} {/* -{" "} */}
+                                                        {/* {transaction.type === "income" ? "Revenu" : "Dépense"} */}
                                                     </p>
                                                 </div>
                                                 <span

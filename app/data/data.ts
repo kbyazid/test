@@ -64,8 +64,13 @@ export async function getBudgetAndTransactions(budgetId: string): Promise<FetchR
   try {
     const budget = await prisma.budget.findUnique({
       where: { id: budgetId },
-      include: { transaction: true },
-    });
+      include:{
+                transaction: {
+                    orderBy: {
+                        createdAt: 'desc'
+                    },
+              }    
+    }});
 
     if (!budget) {
       return { data: null, error: "Budget non trouvé." };
