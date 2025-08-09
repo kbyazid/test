@@ -695,9 +695,9 @@ const TransactionRow = ({
             <span className='text-sm font-medium'>
               {formatDate(transaction.createdAt, { withTime: false })}
             </span>
-            <span className='text-xs text-gray-500'>
+            {/* <span className='text-xs text-gray-500'>
               {formatDate(transaction.createdAt, { withTime: true })}
-            </span>
+            </span> */}
           </div>
         </td>
   

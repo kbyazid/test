@@ -156,7 +156,9 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                       </tr>
                   </thead>
                   <tbody>
-                    {budget?.transaction?.map((transaction: Transaction) => (
+                  {/* {transactions.map((transaction: Transaction) => (  */}
+                   {/*  {budget?.transaction?.map((transaction: Transaction) => ( */}
+                   {transactions?.map((transaction: Transaction) => (
                       <tr key={transaction.id}>
                         {/* <td className='text-lg md:text-3xl'>{transaction.emoji}</td> */}
                         <td>
