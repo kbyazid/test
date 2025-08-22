@@ -3,7 +3,6 @@
 import { getTransactionsAndTotals } from "@/app/data/data"; // Importez depuis votre fichier de données
 import { Transaction, Totals } from "@/type"; // Vos types sont dans '@/type'
 import { formatCurrency, formatDate } from '@/lib/utils'; // Vos utilitaires de formatage
-
 import DashboardCard from '../components/DashboardCard'; // Assurez-vous du chemin
 import TransactionCard from '../components/TransactionCard'; // Assurez-vous du chemin
 // Importez le nouveau Client Component pour l'ajout de transaction
@@ -18,12 +17,21 @@ import {
     // View // Pas utilisé pour l'affichage pur
 } from 'lucide-react';
 import { revalidatePath } from "next/cache";
+import { currentUser } from "@clerk/nextjs/server";
+/* import Wrapper from "./Wrapper";
+import Link from "next/link"; */
 
 // Composant principal TransactionList (Server Component)
 export default async function TransactionList() {
-   
-    const userEmail = "tlemcencrma20@gmail.com" // Email par défaut
+    // Récupération de l'utilisateur connecté
+  const user = await currentUser();
+  const userEmail = user?.primaryEmailAddress?.emailAddress
+  if (!user?.primaryEmailAddress?.emailAddress) {
+console.log(" user Email : ", userEmail)
+  }
 
+    /* const userEmail = "tlemcencrma20@gmail.com" */ // Email par défaut
+    
     let transactions: Transaction[] = [];
     let totals: Totals | null| undefined = null;
     let errorLoadingData: string | null = null;
@@ -32,7 +40,7 @@ export default async function TransactionList() {
         // Récupération des données directement côté serveur
         // Pour cette version minimaliste, nous n'avons pas de searchParams ici pour la période.
         // Si vous voulez le filtre de période, il faudra passer `searchParams` de page.tsx à TransactionList.
-        const data = await getTransactionsAndTotals(userEmail, "all"); // Fetch toutes les transactions par défaut
+        const data = await getTransactionsAndTotals(userEmail!, "all"); // Fetch toutes les transactions par défaut
         transactions = data.transactions;
         totals = data.totals;
         console.log("📦 Données reçues dans TransactionList:", data);
@@ -80,7 +88,7 @@ export default async function TransactionList() {
                 </div>
                 {/* Rendre le Client Component pour l'ajout de transaction */}
             <AddIncomeTransactionSection 
-            userEmail={userEmail} 
+            userEmail={userEmail!} 
             onAddSuccess={handleTransactionChange}
             />
             {/* onAddSuccess={handleTransactionChange} */}

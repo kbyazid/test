@@ -1,4 +1,5 @@
-
+import { currentUser } from "@clerk/nextjs/server";
+import { SignOutButton } from "@clerk/nextjs";
 import React from "react";
 import mysql, { RowDataPacket } from "mysql2/promise";
 import Wrapper from "../components/Wrapper";
@@ -29,6 +30,13 @@ async function getMessageFromDB(): Promise<string> {
 
 export default async function Home() {
   const message = await getMessageFromDB();
+    // Récupération de l'utilisateur connecté
+    const user = await currentUser();
+        console.log(user)
+    if (!user?.primaryEmailAddress?.emailAddress) {
+        console.log("user non connecte ...!")
+    }
+    const email = user?.primaryEmailAddress?.emailAddress;
   return (
     <Wrapper>
       {/* Hero Section */}
@@ -44,17 +52,24 @@ export default async function Home() {
                     </p>
                     <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
                         <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                          <div className="rounded-md shadow">
-                            <Link href={`/`} className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white gradient-bg hover:opacity-90 md:py-4 md:text-lg md:px-10">
-                              Commencer maintenant
-                            </Link>
-                            </div>
-                            <div className="mt-3 sm:mt-0 sm:ml-3">
-                                <a href="#" className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-4">
-                                    Voir la démo
-                                </a>
-                            </div>
-                            
+                              <div className="rounded-md shadow">
+                                  {(email) ? (
+                                      <SignOutButton redirectUrl="/">
+                                          <button className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white gradient-bg hover:opacity-90 md:py-4 md:text-lg md:px-10">
+                                              Déconnecter
+                                          </button>
+                                      </SignOutButton>
+                                  ) : (<Link href={`/sign-in`} className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white gradient-bg hover:opacity-90 md:py-4 md:text-lg md:px-10">
+                                      Se connecter
+                                  </Link>)
+                                  }
+                              </div>
+                             <div className="mt-3 sm:mt-0 sm:ml-3">
+                                <Link href={`/demo`} className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-4">
+                                   Voir la démo
+                                </Link>
+
+                            </div>    
                         </div>
                     </div>
                 </div>
@@ -68,9 +83,21 @@ export default async function Home() {
                     </div>
                 </div>
             </div>
+        
+              {user && (
+                  <div className="flex items-center gap-3 mt-6">
+                      <img src={user.imageUrl} alt="Avatar" className="w-10 h-10 rounded-full" />
+                      <div>
+                          <p>{user.firstName} {user.lastName}</p>
+                          <p className="text-sm text-gray-500">{user.primaryEmailAddress?.emailAddress}</p>
+                      </div>
+
+                  </div>
+              )}
         <div className="flex flex-col items-center justify-center mt-10 ">
-          <h1 className="text-2xl font-bold text-center text-blue-600">{message}</h1>
+            <h1 className="text-2xl font-bold text-center text-blue-600">{message}</h1>
         </div>
+
       </div>
 
       {/* Features Section  bg-gray-50*/}
@@ -105,13 +132,14 @@ export default async function Home() {
                     </div>
 
                     {/* Feature 2  */}
-                    <div className="feature-card bg-white p-6 rounded-lg shadow-md transition duration-300 ease-in-out">
+                    {/* feature-card bg-white p-6 rounded-lg shadow-md transition duration-300 ease-in-out */}
+                    <div className="feature-card border-2 border-gray-300 p-6 rounded-lg shadow-md transition duration-300 ease-in-out">
                         <div className="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
                            {/*  <i className="fas fa-bell text-xl"></i> */}
                            <Bell size={24}  />
                         </div>
                         <div className="mt-6">
-                            <h3 className="text-lg font-medium text-gray-900">Alertes intelligentes</h3>
+                            <h3 className="text-lg font-medium">Alertes intelligentes</h3>
                             <p className="mt-2 text-base text-gray-500">
                                 Recevez des notifications lorsque vous dépassez votre budget ou approchez de vos limites.
                             </p>
@@ -119,13 +147,13 @@ export default async function Home() {
                     </div>
 
                     {/*  Feature 3  */}
-                    <div className="feature-card bg-white p-6 rounded-lg shadow-md transition duration-300 ease-in-out">
+                    <div className="feature-card border-2 border-gray-300 p-6 rounded-lg shadow-md transition duration-300 ease-in-out">
                         <div className="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
                             {/* <i className="fas fa-piggy-bank text-xl"></i> */}
                             <PiggyBank size={24}  />
                         </div>
                         <div className="mt-6">
-                            <h3 className="text-lg font-medium text-gray-900">Objectifs d&apos;épargne</h3>
+                            <h3 className="text-lg font-medium">Objectifs d&apos;épargne</h3>
                             <p className="mt-2 text-base text-gray-500">
                                 Définissez et suivez vos objectifs d&apos;épargne avec des projections personnalisées.
                             </p>
@@ -133,13 +161,13 @@ export default async function Home() {
                     </div>
 
                      {/* Feature 4  */}
-                    <div className="feature-card bg-white p-6 rounded-lg shadow-md transition duration-300 ease-in-out">
+                    <div className="feature-card border-2 border-gray-300 p-6 rounded-lg shadow-md transition duration-300 ease-in-out">
                         <div className="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
                             {/* <i className="fas fa-mobile-alt text-xl"></i> */}
                             <Smartphone size={24} />
                         </div>
                         <div className="mt-6">
-                            <h3 className="text-lg font-medium text-gray-900">Application mobile</h3>
+                            <h3 className="text-lg font-medium">Application mobile</h3>
                             <p className="mt-2 text-base text-gray-500">
                                 Accédez à votre budget n&apos;importe où avec nos applications iOS et Android.
                             </p>
@@ -147,13 +175,13 @@ export default async function Home() {
                     </div>
 
                      {/* Feature 5  */}
-                    <div className="feature-card bg-white p-6 rounded-lg shadow-md transition duration-300 ease-in-out">
+                    <div className="feature-card border-2 border-gray-300 p-6 rounded-lg shadow-md transition duration-300 ease-in-out">
                         <div className="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
                             {/* <i className="fas fa-exchange-alt text-xl"></i> */}
                             <ArrowRightLeft size={24}  />
                         </div>
                         <div className="mt-6">
-                            <h3 className="text-lg font-medium text-gray-900">Synchronisation bancaire</h3>
+                            <h3 className="text-lg font-medium">Synchronisation bancaire</h3>
                             <p className="mt-2 text-base text-gray-500">
                                 Connectez vos comptes bancaires pour un suivi automatique de vos transactions.
                             </p>
@@ -161,13 +189,13 @@ export default async function Home() {
                     </div>
 
                     {/* Feature 6 */} 
-                    <div className="feature-card bg-white p-6 rounded-lg shadow-md transition duration-300 ease-in-out">
+                    <div className="feature-card border-2 border-gray-300 p-6 rounded-lg shadow-md transition duration-300 ease-in-out">
                         <div className="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
                             {/* <i className="fas fa-shield-alt text-xl"></i> */}
                             <Shield size={24}  />
                         </div>
                         <div className="mt-6">
-                            <h3 className="text-lg font-medium text-gray-900">Sécurité renforcée</h3>
+                            <h3 className="text-lg font-medium">Sécurité renforcée</h3>
                             <p className="mt-2 text-base text-gray-500">
                                 Vos données sont chiffrées et protégées avec les meilleures normes de sécurité.
                             </p>
@@ -204,7 +232,7 @@ export default async function Home() {
                             </p>
                         </div>
                         <div className="mt-8 md:mt-0 md:w-7/12">
-                            <div className="bg-gray-100 rounded-lg p-6 shadow-inner">
+                            <div className="bg-base-200 rounded-lg p-6 shadow-inner">
                                 <img className="rounded-lg" src="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1351&q=80" alt="Connecter comptes"/>
                             </div>
                         </div>
@@ -222,7 +250,7 @@ export default async function Home() {
                             </p>
                         </div>
                         <div className="mt-8 md:mt-0 md:w-7/12">
-                            <div className="bg-gray-100 rounded-lg p-6 shadow-inner">
+                            <div className="bg-base-200 rounded-lg p-6 shadow-inner">
                                 <img className="rounded-lg" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Catégorisation" />
                             </div>
                         </div>
@@ -240,7 +268,7 @@ export default async function Home() {
                             </p>
                         </div>
                         <div className="mt-8 md:mt-0 md:w-7/12">
-                            <div className="bg-gray-100 rounded-lg p-6 shadow-inner">
+                            <div className="bg-base-200 rounded-lg p-6 shadow-inner">
                                 <img className="rounded-lg" 
                                 src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
                                 alt="Analyse" 

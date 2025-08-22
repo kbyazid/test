@@ -1,5 +1,5 @@
 "use client";
-
+import { useUser } from '@clerk/nextjs'
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import Wrapper from "../components/Wrapper";
 import EmojiPicker from "emoji-picker-react";
@@ -18,6 +18,7 @@ interface NotificationDetails {
 }
 
 const Page = () => {
+  const { user } = useUser()
   const [budgetName, setBudgetName] = useState<string>("");
   const [budgetAmount, setBudgetAmount] = useState<string>("");
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
@@ -57,10 +58,10 @@ const Page = () => {
   };
 
   const handleAddBudget = async () => {
-    /* if (!user?.primaryEmailAddress?.emailAddress) {
+     if (!user?.primaryEmailAddress?.emailAddress) {
       showNotification("Utilisateur non connecté", "error", "top-center");
       return;
-    } */
+    } 
 
     try {
       setIsAdding(true);
@@ -96,7 +97,7 @@ const Page = () => {
       ); */
 
       await addBudget(
-        'tlemcencrma20@gmail.com',
+        user?.primaryEmailAddress?.emailAddress,
         trimmedBudgetName,
         amount,
         selectedEmoji
@@ -147,14 +148,14 @@ const Page = () => {
   };
 
   const fetchBudgets = async () => {
-   /*  if (!user?.primaryEmailAddress?.emailAddress) return; */
+   if (!user?.primaryEmailAddress?.emailAddress) return; 
 
     try {
       setLoading(true);
       const MIN_LOADING_TIME = 1000;
       const start = Date.now();
 
-      const userBudgets = await getBudgetsByUser('tlemcencrma20@gmail.com');
+      const userBudgets = await getBudgetsByUser(user.primaryEmailAddress.emailAddress);
       setBudgets(userBudgets || []);
 
       const elapsed = Date.now() - start;
@@ -175,7 +176,7 @@ const Page = () => {
 
   useEffect(() => {
     fetchBudgets();
-  }, []);
+  }, [user?.primaryEmailAddress?.emailAddress]);
 
   useEffect(() => {
     const modal = modalRef.current;
@@ -373,3 +374,5 @@ const Page = () => {
 };
 
 export default Page;
+
+

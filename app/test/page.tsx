@@ -1,6 +1,7 @@
 "use client"
 
 import { Transaction } from '@/type'
+import { useUser } from '@clerk/nextjs'
 import Wrapper from '../components/Wrapper'
 import React, { useCallback, useEffect, useState } from 'react'
 import { addIncomeTransaction, deleteTransaction,  getTotalTransactionAmountByEmailEffacer,  getTransactionsByPeriodEffacer } from '@/action';
@@ -20,6 +21,7 @@ import {
   import Link from 'next/link'
 import DashboardCard from '../components/DashboardCard';
 import TransactionCard from '../components/TransactionCard';
+import { redirect } from 'next/navigation'
 
 
 // Types et interfaces
@@ -38,6 +40,7 @@ type Totals = {
 } 
 
 const TransactionPage = () => {
+  const { user } = useUser()
     // États
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
@@ -73,9 +76,12 @@ const TransactionPage = () => {
   // Gestion des transactions
   // Récupérer les transactions pour une période donnée
   const fetchTransactions = async (period: Period) => {
+    if (!user?.primaryEmailAddress?.emailAddress) return
     setLoading(true)
     try {
-      const data = await getTransactionsByPeriodEffacer("tlemcencrma20@gmail.com",period);
+      const data = await getTransactionsByPeriodEffacer(
+        user.primaryEmailAddress.emailAddress, 
+        period);
       /* console.log("📦 Données reçues pour la période:", period, data); */ // ← AJOUT ICI
       /* console.log(`🔢 ${data?.length ?? 0} transactions récupérées`); */
 
@@ -94,7 +100,17 @@ const TransactionPage = () => {
 
   const fetchTotals = async () => {     
     try {
-      const result = await getTotalTransactionAmountByEmailEffacer()
+
+      const email = user?.primaryEmailAddress?.emailAddress;
+if (!email) {
+    redirect("/sign-in");
+    return; // Ajoutez un return pour vous assurer que le reste de la fonction ne s'exécute pas
+}
+const result = await getTotalTransactionAmountByEmailEffacer(email);
+
+      
+     
+      
       setTotals(result || null); // Utilisez || null pour gérer le cas où 'result' est undefined
     } catch (err) {
       console.error("Failed to fetch totals:", err)
@@ -110,7 +126,7 @@ const TransactionPage = () => {
   }, [currentPeriod]);
   
   const handleAddTransaction = async () => {
-    /* if (!user?.primaryEmailAddress?.emailAddress) return */
+    if (!user?.primaryEmailAddress?.emailAddress) return 
     try {
       setIsAdding(true)
       const MIN_LOADING_TIME = 500
@@ -132,14 +148,15 @@ const TransactionPage = () => {
       await addIncomeTransaction(
         amountNumber, 
         trimmedDescription, 
-        "tlemcencrma20@gmail.com"
+        user.primaryEmailAddress.emailAddress
       )
       
-      await Promise.all([
-        fetchTransactions(currentPeriod),
-        fetchTotals()
-      ])
-
+      
+        await Promise.all([
+          fetchTransactions(currentPeriod),
+          fetchTotals()
+        ])
+      
       // Fermeture modale
       closeModal("add_income_modal")
 

@@ -5,6 +5,51 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { transaction_type } from "./app/generated/prisma";
 
+export async function checkUser(email: string | undefined) {
+    if (!email) return
+    try {
+        const existingUser = await prisma.user.findUnique({
+            where: {
+                email
+            }
+        })
+
+        if (!existingUser) {
+            console.log("Nouvel utilisateur ajouté dans la base de données")
+        } else {
+            console.log("Utilisateur déjà présent dans la base de données")
+        }
+
+    } catch (error) {
+        console.error("Erreur lors de la vérification de l'utilisateur:", error);
+    }
+
+}
+
+export async function checkAndAddUser(email: string | undefined) {
+    if (!email) return
+    try {
+        const existingUser = await prisma.user.findUnique({
+            where: {
+                email
+            }
+        })
+
+        if (!existingUser) {
+            await prisma.user.create({
+                data: { email }
+            })
+            console.log("Nouvel utilisateur ajouté dans la base de données")
+        } else {
+            console.log("Utilisateur déjà présent dans la base de données")
+        }
+
+    } catch (error) {
+        console.error("Erreur lors de la vérification de l'utilisateur:", error);
+    }
+
+}
+
 // Interface pour le résultat groupé par jour
 export interface DailyExpense {
     date: string; // La date formatée (ex: YYYY-MM-DD)
@@ -371,8 +416,8 @@ export async function getAllTransactions() {
 }
 
 /* ======================================================================= */
-/* Deplace ds app/data/data  */
-export async function getBudgetsByUser(email="tlemcencrma20@gmail.com") {
+/* Deplace ds app/data/data et complete pour la gestion des erreurs */
+ export async function getBudgetsByUser(email:string) {
   try {
       const user = await prisma.user.findUnique({
           where: {
@@ -391,13 +436,13 @@ export async function getBudgetsByUser(email="tlemcencrma20@gmail.com") {
       if (!user) {
           throw new Error("Utilisateur non trouvé")
       }
-      /* console.log(user.budgets) */
+      
       return user.budget
   } catch (error) {
       console.error('Erreur lors de la récupération des budgets:', error);
       throw error;
   }
-}
+} 
 
 /* ======================================================================= */
 /* export async function getTransactionsByBudgetId(budgetId: string) {
@@ -546,7 +591,7 @@ export async function getTransactionsByEmailAndPeriod3( email = "tlemcencrma20@g
 }
 /* ======================================================================= */
 // Calcul des trois totaux
-export async function getTotalTransactionAmountByEmailEffacer( email = "tlemcencrma20@gmail.com") {
+export async function getTotalTransactionAmountByEmailEffacer( email : string) {
   if (!email) return
   try {
       const user = await prisma.user.findUnique({
@@ -677,7 +722,7 @@ export async function getTransactionsByPeriodEffacer(email:string , period: stri
 //********************************************************************/
 //                               Dashboard
 //********************************************************************/
-export async function getTotalTransactionAmount(email="tlemcencrma20@gmail.com") {
+export async function getTotalTransactionAmount(email:string) {
   try {
       const user = await prisma.user.findUnique({
           where: { email },
@@ -705,7 +750,7 @@ export async function getTotalTransactionAmount(email="tlemcencrma20@gmail.com")
 }
 
 /* 1. Nombre de transactions : */
-export const getTransactionCount = async (email="tlemcencrma20@gmail.com") => {
+export const getTransactionCount = async (email:string) => {
 const user = await prisma.user.findUnique({
   where: { email },
   include: {
@@ -727,7 +772,7 @@ return count;
 };
 
 /* 2. Nombre de budgets :  */
-export const getBudgetCount = async (email="tlemcencrma20@gmail.com") => {
+export const getBudgetCount = async (email:string) => {
 const count = await prisma.budget.count({
   where: { user: { email } },
 });
@@ -735,7 +780,7 @@ return count;
 };
 
 /* 3. Montant total des budgets :  */
-export const getTotalBudgetAmount = async (email="tlemcencrma20@gmail.com") => {
+export const getTotalBudgetAmount = async (email:string) => {
 const budgets = await prisma.budget.findMany({
   where: { user: { email } },
 });
@@ -744,7 +789,7 @@ const total = budgets.reduce((sum, budget) => sum + (budget.amount || 0), 0);
 return total;
 };
 
-export async function getTotalTransactionCount(email="tlemcencrma20@gmail.com") {
+export async function getTotalTransactionCount(email:string) {
   try {
       const user = await prisma.user.findUnique({
           where: { email },
@@ -772,7 +817,7 @@ export async function getTotalTransactionCount(email="tlemcencrma20@gmail.com") 
 }
 
 
-export async function getReachedBudgets(email="tlemcencrma20@gmail.com") {
+export async function getReachedBudgets(email:string) {
   try {
       const user = await prisma.user.findUnique({
           where: { email },
@@ -802,7 +847,7 @@ export async function getReachedBudgets(email="tlemcencrma20@gmail.com") {
 
 }
 
-export async function getUserBudgetData(email="tlemcencrma20@gmail.com") {
+export async function getUserBudgetData(email:string) {
   try {
 
       const user = await prisma.user.findUnique({
@@ -831,7 +876,7 @@ export async function getUserBudgetData(email="tlemcencrma20@gmail.com") {
   }
 }
 
-export const getLastTransactions = async (email="tlemcencrma20@gmail.com") => {
+export const getLastTransactions = async (email:string) => {
   try {
       const transactions = await prisma.transaction.findMany({
           where : {
@@ -844,7 +889,7 @@ export const getLastTransactions = async (email="tlemcencrma20@gmail.com") => {
           orderBy : {
               createdAt: 'desc',
           },
-          take: 20 , 
+          take: 30 , 
           include: {
               budget : {
                   select: {
@@ -869,7 +914,7 @@ export const getLastTransactions = async (email="tlemcencrma20@gmail.com") => {
   }
 }
 
-export const getLastBudgets = async (email="tlemcencrma20@gmail.com") => {
+export const getLastBudgets = async (email:string) => {
   try {
        const  budgets = await prisma.budget.findMany({
           where : {

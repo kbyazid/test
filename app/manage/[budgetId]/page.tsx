@@ -1,4 +1,5 @@
 import { PrismaClient } from "@/app/generated/prisma";
+import { currentUser } from "@clerk/nextjs/server";
 import Wrapper from "@/app/components/Wrapper";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -42,6 +43,22 @@ async function getBudgetAndTransactions(budgetId: string) {
 
 export default async function BudgetDetailsPage({ params }: BudgetDetailsPageProps) {
   const { budgetId } = await params; // Attendre params pour résoudre le paramètre de la route dynamique
+  
+  // Récupération de l'utilisateur connecté
+  const user = await currentUser();
+  if (!user?.primaryEmailAddress?.emailAddress) {
+    return (
+      <Wrapper>
+        <div className="text-center py-10">
+          <p className="text-red-500">Vous devez être connecté pour voir cette page.</p>
+          <Link href="/sign-in" className="btn btn-accent mt-4">
+            Se connecter
+          </Link>
+        </div>
+      </Wrapper>
+    );
+  }
+  const email = user.primaryEmailAddress.emailAddress;
 
   const data = await getBudgetAndTransactions(budgetId);
 
@@ -65,12 +82,6 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
       revalidatePath(`/manage/${budgetId}`);
     }
   
-  // Fonction pour revalider le cache après suppression
-/*   async function handleDeleteSuccess() {
-    "use server";
-    revalidatePath(`/manage/${budgetId}`);
-  } */
-
   return (
     <Wrapper>
       <div className="mb-6">
@@ -85,23 +96,9 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
           <AddTransactionButton
             budgetId={budgetId}
             onAddSuccess={handleTransactionChange}
-            email="tlemcencrma20@gmail.com"
+            email={email} // Utilisation de l'email réel et non email="tlemcencrma20@gmail.com"
           />
         </div>
-{/*         <div className='md:w-1/3'>
-        <BudgetItemPrct budget={budget} enableHover={0} depenseColor='text-red-500 font-bold' />
-        </div> */}
-        
-{/*         <h1 className="text-2xl font-bold tracking-tight">
-          {budget.emoji} {budget.name}
-        </h1>
-        <p className="text-muted-foreground">
-          Montant total : {budget.amount.toFixed(2)} €
-        </p>
-        <p className="text-muted-foreground">
-          Dépenses :{" "}
-          {(budget.transaction?.reduce((sum, t) => sum + t.amount, 0) || 0).toFixed(2)} €
-        </p> */}
       </div>
 
       <h2 className="text-xl font-semibold mb-4">Transactions</h2>
@@ -110,41 +107,8 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
           <p className="text-gray-500">Aucune transaction pour ce budget.</p>
         </div>
       ) : (
- /*        <ul className="space-y-4">
-          {transactions.map((transaction: Transaction) => (
-            <li
-              key={transaction.id}
-              className="p-4 bg-base-200 rounded-lg shadow flex justify-between items-center"
-            >
-              <div>
-                <span className="text-lg">{transaction.emoji || "💸"}</span>{" "}
-                <span className="font-medium">{transaction.description}</span>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(transaction.createdAt).toLocaleDateString()} -{" "}
-                  {transaction.type === "income" ? "Revenu" : "Dépense"}
-                </p>
-              </div>
-              <span
-                className={
-                  transaction.type === "income" ? "text-green-500" : "text-red-500"
-                }
-              >
-                {transaction.type === "income" ? "+" : "-"}
-                {transaction.amount.toFixed(2)} €
-              </span>
-            </li>
-          ))}
-        </ul> */
         <table className="table table-zebra ">
                   <thead>
-                    {/* <tr>
-                      <th></th>
-                      <th>Montant</th>
-                      <th>Description</th>
-                      <th>Date</th>
-                      <th>Heure</th>
-                      <th>Action</th>
-                    </tr> */}
                     <tr>
                     {/* <th></th> */}
                       <th className="text-left">Montant</th>
@@ -156,8 +120,6 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                       </tr>
                   </thead>
                   <tbody>
-                  {/* {transactions.map((transaction: Transaction) => (  */}
-                   {/*  {budget?.transaction?.map((transaction: Transaction) => ( */}
                    {transactions?.map((transaction: Transaction) => (
                       <tr key={transaction.id}>
                         {/* <td className='text-lg md:text-3xl'>{transaction.emoji}</td> */}
@@ -182,7 +144,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                         </td>
 
                         <td className="md:hidden px-2 py-3">
-                          <div className='flex flex-col items-start'>
+                          <div className='flex flex-col items-start'>                          
                             <span className='text-xs mb-1'>
                               {formatDate(transaction.createdAt, { withTime: true })}
                             </span>

@@ -11,6 +11,7 @@
     "seed:users": "ts-node add-users.ts"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.30.0",
     "@prisma/client": "^6.11.1",
     "dompurify": "^3.2.6",
     "emoji-picker-react": "^4.12.3",

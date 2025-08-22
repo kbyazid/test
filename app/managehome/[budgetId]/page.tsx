@@ -54,6 +54,26 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
  
     const { budget, transactions } = result.data!;
 
+    // Logique pour consolider les dépenses
+    const consolidatedExpenses: { [key: string]: number } = {};
+    transactions.forEach((transaction: Transaction) => {
+        // On ne consolide que les dépenses (qui ne sont pas de type 'income')
+        if (transaction.type !== "income") {
+            // Utiliser le premier mot de la description en minuscules comme clé
+            const key = transaction.description.trim().split(' ')[0].substring(0, 5).toLowerCase();
+            // On totalise les montants
+            consolidatedExpenses[key] = (consolidatedExpenses[key] || 0) + transaction.amount;
+            
+        }
+    });
+
+      // Convertir l'objet en tableau pour le rendu
+    const consolidatedExpensesSummary = Object.keys(consolidatedExpenses).map(key => ({
+        description: key.charAt(0).toUpperCase() + key.slice(1), // Capitaliser la première lettre pour l'affichage
+        totalAmount: consolidatedExpenses[key],
+    }));
+
+
     return (
         <Wrapper>
             <div className="mb-6">
@@ -68,10 +88,30 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                     <div className='flex md:flex-row flex-col'>
                         <div className='md:w-1/3'>
                             <BudgetItemPrct budget={budget} enableHover={0} depenseColor='text-red-500 font-bold' />
-                        </div>
+                        
+                        {/* Nouvelle section pour le résumé des dépenses consolidées */}
+                        {consolidatedExpensesSummary.length > 0 && (
+                            <div className="md:mt-8 mt-4  mx-2">
+                                <div className="mt-8 border-2 border-base-300 p-5 rounded-xl">
+                                    <h2 className="text-xl text-accent font-bold mb-2 text-center">Synthèse des dépenses par nature</h2>
+                               
+                                
+                                <ul className="space-y-2">
+                                    {consolidatedExpensesSummary.map((item, index) => (
+                                        <li key={index} className="p-2 bg-base-200 rounded-lg shadow flex justify-between items-center">
+                                            <span className="font-medium text-base-800">{item.description}</span>
+                                            <span className="text-sky-600 font-bold">{formatCurrency(item.totalAmount)}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                                 </div>
+                            </div>
+                        )}
+
+                         </div>   
                         {budget?.transaction && budget.transaction.length > 0 ? (
                             <div className="md:mt-0 mt-4 md:w-2/3 mx-2">
-                                <h2 className="text-xl font-semibold mb-4">Transactions</h2>
+                                <h2 className="bg-base-200 rounded-lg shadow text-xl text-base-900 font-bold mb-4 text-center">Transactions</h2>
                                 <div className="overflow-x-auto space-y-4 flex flex-col">
                                     <ul className="space-y-4">
                                         {transactions.map((transaction: Transaction) => (

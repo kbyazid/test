@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <Wrapper>
       <div className="flex items-center justify-center flex-col py-10 w-full">
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full">
           {/* Titre et sous-titre - Rendu instantanément */}
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-center">Prenez le contrôle de vos finances</h1>
@@ -20,9 +20,9 @@ export default function Home() {
 
           {/* Utilisation de Suspense pour charger les budgets de manière asynchrone */}
           <Suspense fallback={<div className="flex justify-center items-center py-10">
-      <span className="loading loading-spinner loading-lg text-accent"></span>
-      <span className="ml-4 font-bold text-accent">Chargement des budgets...</span>
-    </div>}>
+            <span className="loading loading-spinner loading-lg text-accent"></span>
+            <span className="ml-4 font-bold text-accent">Chargement des budgets...</span>
+            </div>}>
             <BudgetList /> {/* Le composant qui va chercher les données */}
           </Suspense>
         </div>

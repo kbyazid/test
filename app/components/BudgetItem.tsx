@@ -8,7 +8,8 @@ interface BudgetItemProps {
 
 /* const BudgetItem: React.FC<BudgetItemProps> = ({ budget , enableHover, depenseColor = "text-gray-500"}) => { */
 const BudgetItem = ({ budget , enableHover, depenseColor = "text-gray-500"}: BudgetItemProps) => {
-    const transactionCount = budget.transaction ? budget.transaction.length : 0;
+   const transactionCount = budget.transaction ? budget.transaction.length : 0; 
+    
     const totalTransactionAmount = budget.transaction
         ? budget.transaction.reduce(
             (sum, transaction) => sum + transaction.amount, 0)

@@ -13,22 +13,37 @@ interface BudgetWithTransactions extends Budget {
   transaction: Transaction[];
 }
 /* ======================================================================= */
-/* page Home */
-export async function getBudgetsByUser(email: string = "tlemcencrma20@gmail.com"): Promise<FetchResult<Budget[]>> {
+/* page Home plus complete que celle de action */
+export async function getBudgetsByUser(email: string ): Promise<FetchResult<Budget[]>> {
   try {
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
         budget: {
-          include: { transaction: true },
+          include: {
+            transaction: {
+              orderBy: {
+                createdAt: "desc", // Tri décroissant
+                },
+              },
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
         },
       },
     });
 
+/*     on remplace budget: {
+          include: { transaction: true },
+        },  pour les classements */
+
     if (!user) {
       return { data: [], error: null };
     }
+    // le renvoi des data
     return { data: user.budget as Budget[], error: null };
+
   } catch (error: unknown) { // CORRIGÉ : 'any' remplacé par 'unknown'
     console.error('Erreur lors de la récupération des budgets:', error);
 

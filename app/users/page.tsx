@@ -5,7 +5,7 @@ import UserList from "../components/UserList";
 import Link from "next/link";
 import { SearchInput } from '../components/SearchInput';
 
-export default async function Page({
+export default async function users({
     searchParams,
   }: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -47,7 +47,7 @@ export default async function Page({
         createdAt: 'desc', // Ou un autre champ pour un ordre cohérent
       },
     });
-
+    /* console.log(users) */
   return (
     <Wrapper>
       <div className="space-y-6 mb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

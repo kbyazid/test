@@ -5,11 +5,20 @@ import { getBudgetsByUser } from "@/app/data/data"; // Type Budget
 // (Créez ce fichier dans components/ClientLink.tsx)
 import ClientLink from "../components/ClientLink";
 /* import { Budget } from "@/type"; */
+import { currentUser } from "@clerk/nextjs/server";
 
+import { redirect } from "next/navigation";
 // Nouveau Server Component pour afficher la liste des budgets
 // Cela pourrait être dans un fichier séparé comme components/BudgetList.tsx
 export async function BudgetList() {
-    const result = await getBudgetsByUser("tlemcencrma20@gmail.com"); // Appel asynchrone des données
+  const user = await currentUser();
+  if (!user?.primaryEmailAddress?.emailAddress) {
+     redirect("/sign-in"); // <--- Mieux ! Redirigez l'utilisateur directement
+  }
+
+  const email = user.primaryEmailAddress.emailAddress;
+
+  const result = await getBudgetsByUser(email); // Appel asynchrone des données
     // Gérer les erreurs de récupération de données
     if (result.error) {
         return (

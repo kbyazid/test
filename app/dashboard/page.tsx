@@ -30,6 +30,7 @@ import TransactionItem from "../components/TransactionItem";
 import BudgetItem from "../components/BudgetItem";
 import Link from "next/link";
 import { formatCurrency } from '@/lib/utils'
+import { useUser } from '@clerk/nextjs'
 
 interface AxisTickPayload {
   value: string | number;
@@ -44,6 +45,7 @@ interface BudgetSummary {
 
 
 const DashboardPage = () => {
+  const { user } = useUser()
   const [totalAmount, setTotalAmount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -82,9 +84,11 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+       if (!user?.primaryEmailAddress?.emailAddress) return
       setIsLoading(true);
       try {
-        const email = "tlemcencrma20@gmail.com";
+
+        const email = user.primaryEmailAddress.emailAddress;
         const amount = await getTotalTransactionAmount(email);
         const count = await getTransactionCount(email);
         const reachedBudgets = await getReachedBudgets(email);
@@ -113,7 +117,7 @@ const DashboardPage = () => {
 
  /*  console.log(dailyExpenses) */
 
-      const daysToShow = Math.min(dailyExpenses.length, 15);
+      const daysToShow = Math.min(dailyExpenses.length, 30);
       const expensesSlice = dailyExpenses.slice(0, daysToShow);
       const totalSum = expensesSlice.reduce((sum, expense) => sum + expense.totalAmount, 0);
       const average = totalSum / daysToShow;
@@ -203,7 +207,7 @@ const DashboardPage = () => {
               </div>
               <div className="md:w-1/3 ml-4">
                 <h3 className="text-lg font-semibold my-4 md:mb-4 md:mt-0">
-                  Derniers Budgets
+                  Derniers Budgets Crees
                 </h3>
                 <ul className="grid grid-cols-1 gap-4">
                   {budgets.map((budget) => (
@@ -216,7 +220,7 @@ const DashboardPage = () => {
                 <div className="mt-8 border-2 border-base-300 p-5 rounded-xl">
                   {/* <div className="flex justify-center items-center py-2"> */}
                   <h3 className="text-lg font-bold mb-3 text-center">
-                    Récapitulatif des Dépenses par Journée (Derniere quinzaine)
+                    Récapitulatif des Dépenses par Journée (30 Derniers jours)
                   </h3>
                  {/*  </div> */}
                   {dailyExpenses.length === 0 ? (
