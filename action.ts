@@ -4,6 +4,12 @@ import { Budget, Transaction } from "./type";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { transaction_type } from "./app/generated/prisma";
+import { cookies } from "next/headers";
+// Enum pour le rôle
+enum UserRole {
+  ADMIN = "ADMIN",
+  USER = "USER",
+}
 
 export async function checkUser(email: string | undefined) {
     if (!email) return
@@ -938,4 +944,28 @@ export const getLastBudgets = async (email:string) => {
       console.error('Erreur lors de la récupération des derniers budgets: ', error);
       throw error;
   }
+}
+
+//********************************************************************/
+//                              Users
+//********************************************************************/
+
+// Action Server : toggle status
+export async function toggleUserStatus(userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error("Utilisateur non trouvé");
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { status: !user.status },
+  });
+
+  revalidatePath("/users");
+}
+
+// Action Server : sélectionner un utilisateur pour impersonation
+export async function selectUserForImpersonation(userId: string) {
+  const cookieStore = cookies();
+  (await cookieStore).set("impersonatedUserId", userId, { path: "/" });
+  revalidatePath("/users");
 }

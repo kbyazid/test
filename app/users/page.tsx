@@ -1,20 +1,27 @@
 import React from 'react'
-import prisma from "@/lib/prisma";
-import Wrapper from '../components/Wrapper';
-import UserList from "../components/UserList";
-import Link from "next/link";
-import { SearchInput } from '../components/SearchInput';
+import prisma from "@/lib/prisma"; // Client Prisma pour interagir avec la base de données
+import Wrapper from '../components/Wrapper'; // Composant conteneur pour uniformiser la mise en page
+import UserList from "../components/UserList"; // Composant d'affichage de la liste des utilisateurs
+import Link from "next/link"; // Composant de navigation interne Next.js
+import { SearchInput } from '../components/SearchInput'; // Champ de recherche utilisateur
+/* import { toggleUserStatus, selectUserForImpersonation } from "@/action"; */
+/* import { revalidatePath } from 'next/cache'; */
+import { toggleUserStatus } from "@/action";
 
+/**
+ * Page Users : affiche la liste des utilisateurs avec pagination et recherche
+ */
 export default async function users({
     searchParams,
   }: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
   }) {
+    // Récupère le paramètre "page" depuis l’URL (via searchParams)
     const pages = (await searchParams).page
     const ITEMS_PER_PAGE = 3; // Nombre d'utilisateurs par page
     const pageParam = pages;
 
-    // Assurez-vous que 'page' est un nombre valide, par défaut 1
+    // Assurez-vous que 'page' est bien un nombre valide, sinon on met par défaut 1
     const page = Number(pageParam) || 1;
 
     // Assurez-vous que 'search' est un string valide. S'il est undefined ou non-string, il devient une chaîne vide.
@@ -47,6 +54,19 @@ export default async function users({
         createdAt: 'desc', // Ou un autre champ pour un ordre cohérent
       },
     });
+
+/* async function toggleUserStatus(userId: string) {
+  "use server";
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error("Utilisateur non trouvé");
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { status: !user.status },
+  });
+
+  revalidatePath("/users");
+} */
     /* console.log(users) */
   return (
     <Wrapper>
@@ -58,10 +78,24 @@ export default async function users({
                 <p className="text-muted-foreground">Nombre total d&apos;utilisateurs : {totalUsers}</p>
             </div>
         {/* Section Recherche et ajout */}
-        <SearchInput search={search} />
+            <SearchInput search={search} />
   
         {/* La liste des utilisateurs rendue par UserList */}
-            <UserList users={users} />
+            {/* <UserList users={users} /> */}
+          <UserList
+            users={users}
+            renderActions={(user) => (
+        <form action={async () => { "use server"; await toggleUserStatus(user.id); }}>
+          <button
+            type="submit"
+            className={`btn btn-sm ${user.status ? "btn-success" : "btn-error"}`}
+          >
+            {user.status ? "Désactiver" : "Activer"}
+          </button>
+        </form>
+      )}
+            />
+
 
         {/* Section de Pagination */}
         <PaginationControls

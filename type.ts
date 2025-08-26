@@ -10,6 +10,8 @@ export type Totals = {
 export interface User {
     id: string;
     email: string;
+    status: boolean;
+    role: "ADMIN" | "USER";
   }
 
 export interface Budget {

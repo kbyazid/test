@@ -1,0 +1,254 @@
+"use client";
+
+import { useState, useEffect, useMemo } from 'react';
+import Wrapper from "@/app/components/Wrapper";
+import { ArrowLeft, Send, Search, Calculator } from "lucide-react";
+import { Budget, Transaction } from "@/type";
+import BudgetItemPrct from "@/app/components/BudgetItemPrct";
+import { formatCurrency } from '@/lib/utils';
+import ClientLink from "@/app/components/ClientLink";
+
+// Définissez les mois ici pour la sélection
+const months = [
+  { value: '01', label: 'Janvier' },
+  { value: '02', label: 'Février' },
+  { value: '03', label: 'Mars' },
+  { value: '04', label: 'Avril' },
+  { value: '05', label: 'Mai' },
+  { value: '06', label: 'Juin' },
+  { value: '07', label: 'Juillet' },
+  { value: '08', label: 'Août' },
+  { value: '09', label: 'Septembre' },
+  { value: '10', label: 'Octobre' },
+  { value: '11', label: 'Novembre' },
+  { value: '12', label: 'Décembre' },
+];
+
+interface BudgetDetailsClientProps {
+  budget: Budget;
+  initialTransactions: Transaction[];
+}
+
+export default function BudgetDetailsClient({ budget, initialTransactions }: BudgetDetailsClientProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPeriod, setCurrentPeriod] = useState("all");
+  const [filteredTransactions, setFilteredTransactions] = useState(initialTransactions);
+
+  // Fonction de filtrage
+  const filterTransactions = (period: string, query: string) => {
+    let filtered = initialTransactions;
+
+    // Filtrer par mois
+    if (period !== 'all') {
+      filtered = filtered.filter(transaction => {
+        const transactionMonth = new Date(transaction.createdAt).getMonth() + 1;
+        return transactionMonth === parseInt(period);
+      });
+    }
+
+    // Filtrer par recherche
+    if (query) {
+      filtered = filtered.filter(transaction =>
+        transaction.description.toLowerCase().includes(query.toLowerCase()) ||
+        (budget.name && budget.name.toLowerCase().includes(query.toLowerCase()))
+      );
+    }
+    
+    // Trier par date la plus récente
+    filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    setFilteredTransactions(filtered);
+  };
+
+  // Mettre à jour les transactions filtrées lorsque la recherche ou la période changent
+  useEffect(() => {
+    filterTransactions(currentPeriod, searchQuery);
+  }, [searchQuery, currentPeriod, initialTransactions]);
+
+  // Logique pour consolider les dépenses (fonctionne sur les transactions filtrées)
+  const consolidatedExpensesSummary = useMemo(() => {
+    const consolidatedExpenses: { [key: string]: number } = {};
+    filteredTransactions.forEach((transaction: Transaction) => {
+      if (transaction.type !== "income") {
+        const key = transaction.description.trim().split(' ')[0].substring(0, 5).toLowerCase();
+        consolidatedExpenses[key] = (consolidatedExpenses[key] || 0) + transaction.amount;
+      }
+    });
+    return Object.keys(consolidatedExpenses).map(key => ({
+      description: key.charAt(0).toUpperCase() + key.slice(1),
+      totalAmount: consolidatedExpenses[key],
+    }));
+  }, [filteredTransactions]);
+
+  // Le label du dashboard card
+/*   const filterLabel = useMemo(() => {
+    if (currentPeriod === 'all') {
+      return 'Toutes les transactions';
+    }
+    const selectedMonth = months.find(m => m.value === currentPeriod)?.label;
+    return `Transactions de ${selectedMonth}`;
+  }, [currentPeriod]); */
+
+  // Ajoutez ce useMemo avec les autres hooks en haut du composant
+const sum = useMemo(() => {
+  return filteredTransactions.reduce((acc, t) => {
+    return t.type === 'income' ? acc + t.amount : acc - t.amount;
+  }, 0);
+}, [filteredTransactions]);
+
+
+  return (
+    <Wrapper>
+      <div className="mb-6">
+        <ClientLink href="/">
+          <div className="btn btn-ghost mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" /> Retour
+          </div>
+        </ClientLink>
+
+        {budget && (
+          <div className='flex md:flex-row flex-col'>
+            <div className='md:w-1/3'>
+              <BudgetItemPrct budget={budget} enableHover={0} depenseColor='text-red-500 font-bold' />
+
+              {/* Section pour le résumé des dépenses consolidées */}
+              {consolidatedExpensesSummary.length > 0 && (
+                <div className="md:mt-8 mt-4 mx-2">
+                  <div className="mt-8 border-2 border-base-300 p-5 rounded-xl">
+                    <h2 className="text-xl text-accent font-bold mb-2 text-center">Synthèse des dépenses par nature</h2>
+                    <ul className="space-y-2">
+                      {consolidatedExpensesSummary.map((item, index) => (
+                        <li key={index} className="p-2 bg-base-200 rounded-lg shadow flex justify-between items-center">
+                          <span className="font-medium text-base-800">{item.description}</span>
+                          <span className="text-sky-600 font-bold">{formatCurrency(item.totalAmount)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="md:w-2/3 ">
+            {/* Version search */}
+              <div className="card w-full bg-base-150 card-md shadow-md rounded-xl border-2 border-gray-300 mb-4 mx-2">
+                <div className="card-body">
+                  <h2 className="card-title text-xl font-bold">Recherche & Filtre</h2>
+                  <div className="flex flex-col md:flex-row gap-4 items-center mb-4">
+                    <div className="input relative w-full md:flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <input
+                        type="search"
+                        value={searchQuery}
+                        placeholder="Rechercher par description..."
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className='pl-6'
+                      />
+                    </div>
+                    <div className='w-full md:w-auto'>
+                      <select
+                        className='select w-full select-bordered'
+                        value={currentPeriod}
+                        onChange={(e) => setCurrentPeriod(e.target.value)}
+                      >
+                        <option value="all">Toutes les transactions</option>
+                        {months.map(month => (
+                          <option key={month.value} value={month.value}>{month.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="justify-center card-actions">
+ {/*                    <div>
+                      <DashboardCard
+                        label={filterLabel}
+                        value=""
+                        icon={<Calculator className="text-blue-500 w-8 h-8" />}
+                      />
+                    </div> */}
+                    <div className="justify-center card-actions">
+                        <Calculator className="text-blue-500 w-8 h-8" />
+                        <div className="bg-base-200 p-4 rounded-lg w-full">
+                            <div className="grid md:grid-cols-2 font-bold text-accent gap-4">
+                                <div className="text-center">
+                                    <span className="text-blue-600 font-semibold block">
+                                        Transactions filtrées
+                                    </span>
+                                    <span className="text-lg">
+                                        {filteredTransactions.length}
+                                    </span>
+                                </div>
+                                <div className="text-center">
+                                    <span className="text-blue-600 font-semibold block">
+                                        Solde total
+                                    </span>
+                                    <span className={sum >= 0 ? "text-green-600 text-lg" : "text-red-600 text-lg"}>
+                                        {formatCurrency(sum)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            {/* Section des transactions */}
+            {filteredTransactions.length > 0 ? (
+              <div className="md:mt-0 mt-4  mx-2">
+                
+                <h2 className="bg-base-200 rounded-lg shadow text-xl text-base-900 font-bold mb-4 text-center">Transactions</h2>
+                <div className="overflow-x-auto space-y-4 flex flex-col">
+                  <ul className="space-y-4">
+                    {filteredTransactions.map((transaction: Transaction) => (
+                      <li
+                        key={transaction.id}
+                        className="p-4 bg-base-200 rounded-lg shadow flex justify-between items-center"
+                      >
+                        <div>
+                          <span className="text-lg">{transaction.emoji || "💸"}</span>{" "}
+                          <span className="font-medium">{transaction.description}</span>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(transaction.createdAt).toLocaleDateString('fr-FR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                        <span
+                          className={transaction.type === "income" ? "text-green-500" : "text-sky-600"}
+                        >
+                          {formatCurrency(transaction.amount)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <div className='md:w-2/3 mt-10 md:ml-4 flex items-center justify-center'>
+                <Send strokeWidth={1.5} className='w-8 h-8 text-accent' />
+                <span className='text-gray-500 tracking-tight ml-2'>Aucune transaction trouvee.</span>
+              </div>
+            )}
+            </div>
+
+
+          </div>
+        )}
+      </div>
+    </Wrapper>
+  );
+}
+
+// Composant pour la carte d'indicateur (créé pour éviter l'erreur de "JSX element type 'DashboardCard' does not have any construct or call signatures")
+/* const DashboardCard = ({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) => (
+  <div className="flex flex-col items-center justify-center p-4">
+    <div className="bg-base-300 rounded-full p-2">{icon}</div>
+    <div className="mt-2 text-center">
+      <p className="text-lg font-bold">{value}</p>
+      <p className="text-sm text-gray-500">{label}</p>
+    </div>
+  </div>
+); */
