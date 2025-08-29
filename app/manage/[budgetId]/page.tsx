@@ -8,6 +8,7 @@ import BudgetItemPrct from "@/app/components/BudgetItemPrct";
 import DeleteTransactionButton from "@/app/components/DeleteTransactionButton";
 import { revalidatePath } from "next/cache";
 import AddTransactionButton from "@/app/components/AddTransactionButton";
+import ModBudgetAmount from "@/app/components/ModBudgetAmount";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 interface BudgetDetailsPageProps {
@@ -76,19 +77,31 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
   }
 
   const { budget, transactions } = data;
-    // Fonction pour revalider le cache après suppression ou ajout
-    async function handleTransactionChange() {
-      "use server";
-      revalidatePath(`/manage/${budgetId}`);
-    }
+  
+  // Calculer le total des dépenses
+  const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
+  
+  // Fonction pour revalider le cache après suppression ou ajout
+  async function handleTransactionChange() {
+    "use server";
+    revalidatePath(`/manage/${budgetId}`);
+  }
   
   return (
     <Wrapper>
       <div className="mb-6">
-        <Link href="/budget" className="btn btn-ghost mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour
-        </Link>
+        <div className="flex justify-between items-center mb-4">
+          <Link href="/budget" className="btn btn-ghost">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour
+          </Link>
+          <ModBudgetAmount
+            budgetId={budgetId}
+            currentAmount={budget.amount}
+            totalSpent={totalSpent}
+            onUpdateSuccess={handleTransactionChange}
+          />
+        </div>
         <div className="flex flex-col md:flex-row gap-4 mt-4  ">
           <div className="flex-1">
             <BudgetItemPrct budget={budget} enableHover={1} />

@@ -7,6 +7,14 @@ import { Budget, Transaction } from "@/type";
 import BudgetItemPrct from "@/app/components/BudgetItemPrct";
 import { formatCurrency } from '@/lib/utils';
 import ClientLink from "@/app/components/ClientLink";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+} from "recharts";
 
 // Définissez les mois ici pour la sélection
 const months = [
@@ -32,53 +40,137 @@ interface BudgetDetailsClientProps {
 export default function BudgetDetailsClient({ budget, initialTransactions }: BudgetDetailsClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPeriod, setCurrentPeriod] = useState("all");
+  // Filtrage côté client avec setCurrentPeriod → changement d'état local
   const [filteredTransactions, setFilteredTransactions] = useState(initialTransactions);
 
-  // Fonction de filtrage
-  const filterTransactions = (period: string, query: string) => {
-    let filtered = initialTransactions;
+    // Fonction de filtrage
+    const filterTransactions = (period: string, query: string) => {
+        let filtered = initialTransactions;
+        // Filtrer par mois
+        if (period !== 'all') {
+            filtered = filtered.filter(transaction => {
+                const transactionMonth = new Date(transaction.createdAt).getMonth() + 1;
+                return transactionMonth === parseInt(period);
+            });
+        }
+        // Filtrer par recherche
+        if (query) {
+            filtered = filtered.filter(transaction =>
+                transaction.description.toLowerCase().includes(query.toLowerCase()) ||
+                (budget.name && budget.name.toLowerCase().includes(query.toLowerCase()))
+            );
+        }
+        // Trier par date la plus récente
+        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    // Filtrer par mois
-    if (period !== 'all') {
-      filtered = filtered.filter(transaction => {
-        const transactionMonth = new Date(transaction.createdAt).getMonth() + 1;
-        return transactionMonth === parseInt(period);
-      });
-    }
+        setFilteredTransactions(filtered);
+    };
 
-    // Filtrer par recherche
-    if (query) {
-      filtered = filtered.filter(transaction =>
-        transaction.description.toLowerCase().includes(query.toLowerCase()) ||
-        (budget.name && budget.name.toLowerCase().includes(query.toLowerCase()))
-      );
-    }
-    
-    // Trier par date la plus récente
-    filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // Mettre à jour les transactions filtrées lorsque la recherche ou la période changent
+    useEffect(() => {
+        filterTransactions(currentPeriod, searchQuery);
+    }, [searchQuery, currentPeriod, initialTransactions]);
 
-    setFilteredTransactions(filtered);
-  };
+    // Logique pour consolider les dépenses (fonctionne sur les transactions filtrées)
+    const consolidatedExpensesSummary = useMemo(() => {
+        const consolidatedExpenses: { [key: string]: number } = {};
+        filteredTransactions.forEach((transaction: Transaction) => {
+            if (transaction.type !== "income") {
+                const key = transaction.description.trim().split(' ')[0].substring(0, 5).toLowerCase();
+                consolidatedExpenses[key] = (consolidatedExpenses[key] || 0) + transaction.amount;
+            }
+        });
+        return Object.keys(consolidatedExpenses).map(key => ({
+            description: key.charAt(0).toUpperCase() + key.slice(1),
+            totalAmount: consolidatedExpenses[key],
+        }));
+    }, [filteredTransactions]);
 
-  // Mettre à jour les transactions filtrées lorsque la recherche ou la période changent
-  useEffect(() => {
-    filterTransactions(currentPeriod, searchQuery);
-  }, [searchQuery, currentPeriod, initialTransactions]);
+    // Ajoutez ce useMemo avec les autres hooks en haut du composant
+    const sum = useMemo(() => {
+        return filteredTransactions.reduce((acc, t) => {
+            return t.type === 'income' ? acc + t.amount : acc - t.amount;
+        }, 0);
+    }, [filteredTransactions]);
 
-  // Logique pour consolider les dépenses (fonctionne sur les transactions filtrées)
-  const consolidatedExpensesSummary = useMemo(() => {
-    const consolidatedExpenses: { [key: string]: number } = {};
-    filteredTransactions.forEach((transaction: Transaction) => {
-      if (transaction.type !== "income") {
-        const key = transaction.description.trim().split(' ')[0].substring(0, 5).toLowerCase();
-        consolidatedExpenses[key] = (consolidatedExpenses[key] || 0) + transaction.amount;
-      }
-    });
-    return Object.keys(consolidatedExpenses).map(key => ({
-      description: key.charAt(0).toUpperCase() + key.slice(1),
-      totalAmount: consolidatedExpenses[key],
-    }));
-  }, [filteredTransactions]);
+    // Calcul des dépenses par mois pour le graphique
+    const monthlyExpenses = useMemo(() => {
+        const expensesByMonth: { [key: string]: number } = {};
+        const currentYear = new Date().getFullYear();
+        
+        // Initialiser tous les mois de l'année courante à 0
+        for (let i = 0; i < 12; i++) {
+            const monthKey = `${currentYear}-${String(i + 1).padStart(2, '0')}`;
+            expensesByMonth[monthKey] = 0;
+        }
+        
+        initialTransactions.forEach((transaction: Transaction) => {
+            if (transaction.type !== "income") {
+                const date = new Date(transaction.createdAt);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                
+                if (expensesByMonth[monthKey] !== undefined) {
+                    expensesByMonth[monthKey] += transaction.amount;
+                }
+            }
+        });
+        
+        return Object.entries(expensesByMonth)
+            .map(([key, amount]) => {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const [year, month] = key.split('-');
+                const monthIndex = parseInt(month) - 1;
+                return {
+                    month: months[monthIndex]?.label || 'Inconnu',
+                    amount: amount,
+                    key: key
+                };
+            })
+            .sort((a, b) => a.key.localeCompare(b.key))
+            .filter(item => item.amount > 0); // Afficher seulement les mois avec des dépenses
+    }, [initialTransactions]);
+
+    // Calcul des dépenses par semaine pour le mois sélectionné
+    const weeklyExpenses = useMemo(() => {
+        if (currentPeriod === 'all') return [];
+        
+        const selectedMonth = parseInt(currentPeriod);
+        const currentYear = new Date().getFullYear();
+        const expensesByWeek: { [key: string]: number } = {};
+        
+        filteredTransactions.forEach((transaction: Transaction) => {
+            if (transaction.type !== "income") {
+                const date = new Date(transaction.createdAt);
+                const transactionMonth = date.getMonth() + 1;
+                
+                if (transactionMonth === selectedMonth) {
+                    // Calculer le numéro de semaine dans le mois
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const firstDayOfMonth = new Date(currentYear, selectedMonth - 1, 1);
+                    const dayOfMonth = date.getDate();
+                    const weekNumber = Math.ceil(dayOfMonth / 7);
+                    const weekKey = `Semaine ${weekNumber}`;
+                    
+                    if (!expensesByWeek[weekKey]) {
+                        expensesByWeek[weekKey] = 0;
+                    }
+                    expensesByWeek[weekKey] += transaction.amount;
+                }
+            }
+        });
+        
+        return Object.entries(expensesByWeek)
+            .map(([week, amount]) => ({
+                week,
+                amount
+            }))
+            .sort((a, b) => {
+                const weekA = parseInt(a.week.split(' ')[1]);
+                const weekB = parseInt(b.week.split(' ')[1]);
+                return weekA - weekB;
+            });
+    }, [filteredTransactions, currentPeriod]);
+
 
   // Le label du dashboard card
 /*   const filterLabel = useMemo(() => {
@@ -89,15 +181,7 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
     return `Transactions de ${selectedMonth}`;
   }, [currentPeriod]); */
 
-  // Ajoutez ce useMemo avec les autres hooks en haut du composant
-const sum = useMemo(() => {
-  return filteredTransactions.reduce((acc, t) => {
-    return t.type === 'income' ? acc + t.amount : acc - t.amount;
-  }, 0);
-}, [filteredTransactions]);
-
-
-  return (
+   return (
     <Wrapper>
       <div className="mb-6">
         <ClientLink href="/">
@@ -105,7 +189,6 @@ const sum = useMemo(() => {
             <ArrowLeft className="w-4 h-4 mr-2" /> Retour
           </div>
         </ClientLink>
-
         {budget && (
           <div className='flex md:flex-row flex-col'>
             <div className='md:w-1/3'>
@@ -127,9 +210,66 @@ const sum = useMemo(() => {
                   </div>
                 </div>
               )}
-            </div>
-            
+            </div>          
             <div className="md:w-2/3 ">
+            {/* Graphique des dépenses par mois */}
+            {monthlyExpenses.length > 0 && (
+              <div className="card w-full bg-base-150 card-md shadow-md rounded-xl border-2 border-gray-300 mb-4 mx-2">
+                <div className="card-body">
+                  <h2 className="card-title text-xl font-bold text-center">Dépenses par mois</h2>
+                  <ResponsiveContainer height={200} width="100%">
+                    <BarChart data={monthlyExpenses}>
+                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="month" 
+                        tick={{ fontSize: 12 }}
+                        interval={0}
+                      />
+                      <Tooltip 
+                        formatter={(value: number) => [formatCurrency(value), 'Dépenses']}
+                        labelStyle={{ color: '#333' }}
+                      />
+                      <Bar
+                        dataKey="amount"
+                        fill="#EF4444"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+            
+            {/* Graphique des dépenses par semaine (seulement si un mois est sélectionné) */}
+            {weeklyExpenses.length > 0 && currentPeriod !== 'all' && (
+              <div className="card w-full bg-base-150 card-md shadow-md rounded-xl border-2 border-gray-300 mb-4 mx-2">
+                <div className="card-body">
+                  <h2 className="card-title text-xl font-bold text-center">
+                    Dépenses par semaine - {months.find(m => m.value === currentPeriod)?.label}
+                  </h2>
+                  <ResponsiveContainer height={180} width="100%">
+                    <BarChart data={weeklyExpenses}>
+                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="week" 
+                        tick={{ fontSize: 12 }}
+                        interval={0}
+                      />
+                      <Tooltip 
+                        formatter={(value: number) => [formatCurrency(value), 'Dépenses']}
+                        labelStyle={{ color: '#333' }}
+                      />
+                      <Bar
+                        dataKey="amount"
+                        fill="#F59E0B"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+            
             {/* Version search */}
               <div className="card w-full bg-base-150 card-md shadow-md rounded-xl border-2 border-gray-300 mb-4 mx-2">
                 <div className="card-body">
@@ -147,7 +287,7 @@ const sum = useMemo(() => {
                     </div>
                     <div className='w-full md:w-auto'>
                       <select
-                        className='select w-full select-bordered'
+                        className='select w-full select-bordered text-accent-300'
                         value={currentPeriod}
                         onChange={(e) => setCurrentPeriod(e.target.value)}
                       >
@@ -233,8 +373,6 @@ const sum = useMemo(() => {
               </div>
             )}
             </div>
-
-
           </div>
         )}
       </div>

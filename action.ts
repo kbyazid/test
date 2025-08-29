@@ -308,6 +308,46 @@ export async function deleteTransaction(transactionId: string) {
 
 /* ======================================================================= */
 /**
+ * Updates the amount of a budget.
+ * @param budgetId - The ID of the budget to update.
+ * @param newAmount - The new amount for the budget.
+ * @returns A promise resolving when the budget amount is updated.
+ * @throws Error if the budget is not found or the amount is invalid.
+ */
+export async function updateBudgetAmount(budgetId: string, newAmount: number) {
+  try {
+    if (!budgetId) throw new Error("ID du budget manquant");
+    if (newAmount <= 0) throw new Error("Le montant doit être positif");
+
+    const budget = await prisma.budget.findUnique({
+      where: { id: budgetId },
+      include: { transaction: true }
+    });
+
+    if (!budget) {
+      throw new Error('Budget non trouvé.');
+    }
+
+    // Calculer le total des dépenses
+    const totalSpent = budget.transaction.reduce((sum, t) => sum + t.amount, 0);
+    
+    if (newAmount < totalSpent) {
+      throw new Error(`Le nouveau montant (${newAmount}€) ne peut pas être inférieur aux dépenses actuelles (${totalSpent}€)`);
+    }
+
+    await prisma.budget.update({
+      where: { id: budgetId },
+      data: { amount: newAmount }
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour du montant du budget:', error);
+    throw error;
+  }
+}
+
+/* ======================================================================= */
+/**
  * Deletes a budget by ID and its associated transactions.
  * @param budgetId - The ID of the budget to delete.
  * @returns A promise resolving when the budget and its transactions are deleted.

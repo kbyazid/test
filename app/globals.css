@@ -13,3 +13,25 @@
   border-radius: 20px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
+
+/* Assurez-vous que le body a une hauteur complète */
+html, body {
+  height: 100%;
+}
+
+/* Style pour le contenu principal */
+main {
+  margin-left: 0;
+}
+
+@media (min-width: 1024px) {
+  /* Ajustement pour la sidebar fixe */
+  main {
+    margin-left: 5rem; /* Largeur par défaut de la sidebar réduite */
+  }
+  
+  /* Quand la sidebar est étendue */
+  .lg\:flex + main {
+    margin-left: 16rem;
+  }
+}

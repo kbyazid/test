@@ -1,7 +1,7 @@
 "use client";
 import { useUser } from '@clerk/nextjs'
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import Wrapper from "../components/Wrapper";
+/* import Wrapper from "../components/Wrapper"; */
 import EmojiPicker from "emoji-picker-react";
 import { addBudget, getBudgetsByUser, deleteBudget } from "@/action";
 import Notification, { NotificationType, NotificationPosition } from "../components/Notification";
@@ -194,7 +194,8 @@ const Page = () => {
   }, []);
 
   return (
-    <Wrapper>
+    <>
+    {/* <Wrapper> */}
       {notification && (
         <Notification
           message={notification.message}
@@ -369,7 +370,8 @@ const Page = () => {
             ))}
         </ul>
       )}
-    </Wrapper>
+    {/* </Wrapper> */}
+    </>
   );
 };
 
