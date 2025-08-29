@@ -75,6 +75,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             className="input input-bordered w-full"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
+            placeholder="jj/mm/aaaa"
           />
         </div>
         <div className="flex flex-col">
@@ -84,6 +85,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             className="input input-bordered w-full"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
+            placeholder="jj/mm/aaaa"
           />
         </div>
       </div>
