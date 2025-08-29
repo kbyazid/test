@@ -67,12 +67,12 @@ export default function TransactionTable({ transactions }: TransactionTableProps
   return (
     <>
       {/* Filtre par dates */}
-      <div className="mb-4 flex justify-start gap-4">
+      <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
         <div className="flex flex-col">
           <label className="text-sm font-medium mb-1">Date de début</label>
           <input
             type="date"
-            className="input input-bordered"
+            className="input input-bordered w-full"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
@@ -81,7 +81,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
           <label className="text-sm font-medium mb-1">Date de fin</label>
           <input
             type="date"
-            className="input input-bordered"
+            className="input input-bordered w-full"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
