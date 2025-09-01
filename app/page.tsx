@@ -2,12 +2,17 @@
 // Suppression de "use client"; - Cette page est maintenant un Server Component
 export const dynamic = "force-dynamic"; // Désactive le cache statique
 export const revalidate = 0; // Pas de cache
+import { requireAuth } from "@/lib/auth";
 import { BudgetList } from "./components/BudgetList";
 import Wrapper from "./components/Wrapper"; // Supposons que c'est un Client/Server Component
 import { Suspense } from "react"; // Importez Suspense
 
+
+
 // Composant de Page (maintenant un Server Component)
-export default function Home() {
+export default async function  Home() {
+  // Vérification d'authentification et d'autorisation
+      await requireAuth();
   return (
     <Wrapper>
       <div className="flex items-center justify-center flex-col py-10 w-full">
@@ -30,3 +35,4 @@ export default function Home() {
     </Wrapper>
   );
 }
+

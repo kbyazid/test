@@ -4,9 +4,8 @@ import Wrapper from '../components/Wrapper'; // Composant conteneur pour uniform
 import UserList from "../components/UserList"; // Composant d'affichage de la liste des utilisateurs
 import Link from "next/link"; // Composant de navigation interne Next.js
 import { SearchInput } from '../components/SearchInput'; // Champ de recherche utilisateur
-/* import { toggleUserStatus, selectUserForImpersonation } from "@/action"; */
-/* import { revalidatePath } from 'next/cache'; */
 import { toggleUserStatus } from "@/action";
+import { requireAuth } from "@/lib/auth";
 
 /**
  * Page Users : affiche la liste des utilisateurs avec pagination et recherche
@@ -16,6 +15,9 @@ export default async function users({
   }: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
   }) {
+    // Vérification d'authentification et d'autorisation
+    await requireAuth("ADMIN");
+    
     // Récupère le paramètre "page" depuis l’URL (via searchParams)
     const pages = (await searchParams).page
     const ITEMS_PER_PAGE = 3; // Nombre d'utilisateurs par page
@@ -90,6 +92,7 @@ export default async function users({
             type="submit"
             className={`btn btn-sm ${user.status ? "btn-success" : "btn-error"}`}
           >
+            
             {user.status ? "Désactiver" : "Activer"}
           </button>
         </form>

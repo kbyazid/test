@@ -20,9 +20,9 @@ const UserList = ({ users, renderActions }: UserListProps) => {
           >
             {/* Infos utilisateur */}
             <div className="list-col-grow">
-              <div className="font-medium">{user.email}</div>
+              <div className="font-medium mb-2">{user.email}</div>
               <div className="text-xs opacity-60">
-                ID: {user.id}
+                {/* ID: {user.id} */}
               </div>
               <div className="text-xs">
                 <span
@@ -30,7 +30,8 @@ const UserList = ({ users, renderActions }: UserListProps) => {
                     user.status ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800"
                   }`}
                 >
-                  {user.status ? "Actif" : "Inactif"}
+                  {user.status ? "✅ Actif" : "❌ Inactif"}
+                  {/* {user.status ? "Actif" : "Inactif"} */}
                 </span>
                 <span className="ml-2 px-2 py-0.5 rounded bg-gray-200 text-gray-700">
                   {user.role}

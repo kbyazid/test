@@ -12,6 +12,7 @@ import {
   XAxis,
   YAxis
 } from "recharts";
+import { FinancialCard } from './FinancialCard';
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -63,6 +64,21 @@ export default function TransactionTable({ transactions }: TransactionTableProps
   }, [filteredTransactions, startDate, endDate]);
 
   const showChart = (startDate || endDate) && chartData.length > 0;
+
+  // Calculer les totaux de la période
+  const periodTotals = useMemo(() => {
+    if (!startDate && !endDate) return { totalRecettes: 0, totalDepenses: 0 };
+    
+    const totalRecettes = filteredTransactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+      
+    const totalDepenses = filteredTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+      
+    return { totalRecettes, totalDepenses };
+  }, [filteredTransactions, startDate, endDate]);
 
   return (
     <>
@@ -156,6 +172,74 @@ export default function TransactionTable({ transactions }: TransactionTableProps
               </ResponsiveContainer>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Totaux de la période */}
+      {showChart && (
+        <div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:gap-8">
+            <FinancialCard
+              type="income"
+              title="Revenu de la periode"
+              amount={formatCurrency(periodTotals.totalRecettes)}
+              currency=""
+            />
+
+            <FinancialCard
+              type="expense"
+              title="Dépense de la periode"
+              amount={formatCurrency(periodTotals.totalDepenses)}
+              currency=""
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 mb-6">
+            {/* Total Dépenses */}
+            {/* <div className='bg-red-500 text-white rounded-xl shadow-md p-6 flex flex-col items-start'>
+              <div className='flex items-center justify-between w-full'>
+                <div className='bg-red-600 rounded-full p-2'>
+                  <span className='text-3xl font-bold'>-</span>
+                </div>
+                <p className='text-sm text-right'>Dépenses de la période</p>
+              </div>
+              <div className='mt-4 w-full text-right'>
+                <p className='text-3xl font-bold'>{formatCurrency(periodTotals.totalDepenses)}</p>
+                <p className='text-sm text-gray-200'>Total dépensé</p>
+              </div>
+            </div> */}
+
+            {/* Total Recettes */}
+            {/* <div className='bg-blue-500 text-white rounded-xl shadow-md p-6 flex flex-col items-start'>
+              <div className='flex items-center justify-between w-full'>
+                <div className='bg-blue-600 rounded-full p-2'>
+                  <span className='text-3xl font-bold'>+</span>
+                </div>
+                <p className='text-sm text-right'>Recettes de la période</p>
+              </div>
+              <div className='mt-4 w-full text-right'>
+                <p className='text-3xl font-bold'>{formatCurrency(periodTotals.totalRecettes)}</p>
+                <p className='text-sm text-gray-200'>Total reçu</p>
+              </div>
+            </div> */}
+
+
+          </div>
+          
+          <div>
+            <div className="mt-6 mb-3 text-center">
+              <div className="inline-flex items-center space-x-4 rounded-lg bg-card p-4 shadow-sm">
+                <div className="text-sm text-muted-foreground">
+                  Solde periode:
+                </div>
+                <div className="text-2xl font-bold text-foreground">
+                  {formatCurrency(periodTotals.totalRecettes - periodTotals.totalDepenses)} {/* <span className="text-base font-medium">DZD</span> */}
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       )}
 

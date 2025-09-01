@@ -37,7 +37,7 @@ const LayoutWrapper = ({ children }: LayoutWrapperProps) => {
         />
 
         {/* Main content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-2 overflow-auto">
           {children}
         </main>
       </div>
