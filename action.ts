@@ -1009,3 +1009,95 @@ export async function selectUserForImpersonation(userId: string) {
   (await cookieStore).set("impersonatedUserId", userId, { path: "/" });
   revalidatePath("/users");
 }
+
+//********************************************************************/
+//                            Test-connection
+//********************************************************************/
+
+/* export async function getTodosByUserId(userId: string) {
+  return await prisma.test_connection.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+} */
+
+export async function getTodosByUserEmail(email: string) {
+  // On cherche le user par email + on inclut ses todos
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: {
+      testConnections: {
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
+    },
+  });
+
+  if (!user) {
+    throw new Error("Utilisateur non trouvé");
+  }
+
+  return user.testConnections;
+}  
+
+/* export async function createTodo(email: string, message: string) {
+  return await prisma.test_connection.create({
+    data: { userId, message, completed: false },
+  });
+} */
+
+export async function createTodo(email: string, message: string) {
+  try {
+      const user = await prisma.user.findUnique({
+          where: { email }
+      })
+
+      if (!user) {
+          throw new Error('Utilisateur non trouvé')
+      }
+      
+      const capitalized = message.charAt(0).toUpperCase() + message.slice(1)
+      
+      return await prisma.test_connection.create({
+          data: { 
+              userId: user.id, 
+              message: capitalized, 
+              completed: false 
+          },
+      });
+
+  } catch (error) {
+      console.error('Erreur lors de l\'ajout du todo:', error);
+      throw error
+  }
+}
+
+
+
+export async function deleteTodo(id:number) {
+  return await prisma.test_connection.delete({
+    where: { id },
+  });
+}
+
+export async function toggleTodo(id: number, completed: boolean) {
+  return await prisma.test_connection.update({
+    where: { id },
+    data: { completed },
+  });
+}
+
+export async function updateTodo(id: number, message: string) {
+  return await prisma.test_connection.update({
+    where: { id },
+    data: { message },
+  });
+}
+
+export async function updateTransaction(id: string, description: string, amount: number) {
+  return await prisma.transaction.update({
+    where: { id },
+    data: { description, amount },
+  });
+}

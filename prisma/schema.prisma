@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
+  provider   = "prisma-client-js"
+  output     = "../app/generated/prisma"
   engineType = "library"
 }
 
@@ -10,12 +10,18 @@ datasource db {
 }
 
 model test_connection {
-  id      Int     @id @default(autoincrement())
-  message String? @db.VarChar(255)
+  id        Int      @id @default(autoincrement())
+  message   String?  @db.VarChar(255)
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.DateTime(0)
+  userId    String
+  user      user     @relation(fields: [userId], references: [id], map: "TestConnection_userId_fkey")
+
+  @@index([userId], map: "idx_test_connection_userId")
 }
 
 model budget {
-  id          String         @id @default(uuid())
+  id          String        @id @default(uuid())
   name        String
   amount      Float
   userId      String
@@ -28,7 +34,7 @@ model budget {
 }
 
 model transaction {
-  id          String            @id @default(uuid())
+  id          String           @id @default(uuid())
   description String
   amount      Float
   budgetId    String?
@@ -44,21 +50,17 @@ model transaction {
 }
 
 model user {
-  id          String        @id @default(uuid())
-  email       String        @unique(map: "User_email_key")
-  role        Role          @default(USER)   // 👈 enum
-  status      Boolean       @default(false)   // actif/inactif
-  createdAt   DateTime      @default(now())
-  budget      budget[]
-  transaction transaction[]
+  id              String            @id @default(uuid())
+  email           String            @unique(map: "User_email_key")
+  createdAt       DateTime          @default(now())
+  role            String            @default("user") @db.VarChar(20)
+  status          Boolean           @default(true)
+  budget          budget[]
+  testConnections test_connection[]
+  transaction     transaction[]
 }
 
 enum transaction_type {
   income
   expense
-}
-
-enum Role {
-  ADMIN
-  USER
 }

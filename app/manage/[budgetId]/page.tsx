@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { Transaction } from "@/type";
 import BudgetItemPrct from "@/app/components/BudgetItemPrct";
 import DeleteTransactionButton from "@/app/components/DeleteTransactionButton";
+import EditTransactionButton from "@/app/components/EditTransactionButton";
 import { revalidatePath } from "next/cache";
 import AddTransactionButton from "@/app/components/AddTransactionButton";
 import ModBudgetAmount from "@/app/components/ModBudgetAmount";
@@ -138,7 +139,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                         {/* <td className='text-lg md:text-3xl'>{transaction.emoji}</td> */}
                         <td>
                           {/* badge-accent badge-xs md:badge-sm */}
-                          <div className="text-accent">
+                          <div className="text-green-600 dark:text-green-500 font-semibold">
                             {formatCurrency(transaction.amount)}{/* {transaction.amount} Da */}
                           </div>
                         </td>
@@ -163,10 +164,18 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                             </span>
                             <div className='flex items-center gap-2 mt-2'>
                               {transaction.type === "expense" && (
-                                <DeleteTransactionButton
-                                  transactionId={transaction.id}
-                                  onDeleteSuccess={handleTransactionChange}
-                                />
+                                <>
+                                  <EditTransactionButton
+                                    transactionId={transaction.id}
+                                    currentDescription={transaction.description}
+                                    currentAmount={transaction.amount}
+                                    onEditSuccess={handleTransactionChange}
+                                  />
+                                  <DeleteTransactionButton
+                                    transactionId={transaction.id}
+                                    onDeleteSuccess={handleTransactionChange}
+                                  />
+                                </>
                               )}
                             </div>
                           </div>
@@ -177,10 +186,18 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                         <td className='hidden md:table-cell text-center p-2 md:p-4'>
                           <div className="flex items-center justify-center gap-2">
                            {transaction.type === "expense" && (
-                          <DeleteTransactionButton
-                            transactionId={transaction.id}
-                            onDeleteSuccess={handleTransactionChange}
-                          />
+                            <>
+                              <EditTransactionButton
+                                transactionId={transaction.id}
+                                currentDescription={transaction.description}
+                                currentAmount={transaction.amount}
+                                onEditSuccess={handleTransactionChange}
+                              />
+                              <DeleteTransactionButton
+                                transactionId={transaction.id}
+                                onDeleteSuccess={handleTransactionChange}
+                              />
+                            </>
                         )}
                           </div>                       
                         </td>

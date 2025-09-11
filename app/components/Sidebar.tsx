@@ -8,7 +8,8 @@ import {
   FileText, 
   X,
   LogOut,
-  Table
+  Table,
+  ListTodo
 } from "lucide-react";
 
 type Props = {
@@ -22,6 +23,7 @@ const menu = [
   { key: "dashboard", label: "Tableau de bord", icon: PieChart, href: "/dashboard" },
   { key: "budget", label: "Mes budgets", icon: CreditCard, href: "/budget" },
   { key: "transaction", label: "Mes Transactions", icon: FileText, href: "/transaction" },
+  { key: "todos", label: "Mes tâches", icon: ListTodo, href: "/todos" },
   { key: "users", label: "Mes utilisateurs", icon: Users, href: "/users" },
   { key: "test", label: "Transactions", icon: Table, href: "/test" },
 ];

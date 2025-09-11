@@ -8,6 +8,18 @@ import { toggleUserStatus } from "@/action";
 import { requireAuth } from "@/lib/auth";
 
 /**
+ * Définition du type User pour correspondre à l'attente du composant UserList.
+ * C'est une solution rapide pour résoudre l'erreur de compilation.
+ */
+interface User {
+  id: string;
+  email: string;
+  status: boolean;
+  role: "ADMIN" | "USER";
+  createdAt: Date;
+}
+
+/**
  * Page Users : affiche la liste des utilisateurs avec pagination et recherche
  */
 export default async function users({
@@ -48,7 +60,7 @@ export default async function users({
     const currentPage =  page <= totalPages  ? Math.max(1, page) : 1;
 
     // 3. Récupérer les utilisateurs pour la page actuelle
-    const users = await prisma.user.findMany({
+    const rawUsers = await prisma.user.findMany({
       take: ITEMS_PER_PAGE,
       skip: (currentPage - 1) * ITEMS_PER_PAGE,
       where: userWhereClause, // Utilisation de la clause 'where' conditionnelle
@@ -56,6 +68,13 @@ export default async function users({
         createdAt: 'desc', // Ou un autre champ pour un ordre cohérent
       },
     });
+
+      // Assurez-vous que le type 'role' est correct avant de passer les données à UserList
+  const users: User[] = rawUsers.map(user => ({
+    ...user,
+    // Cast sécurisé: TypeScript est rassuré, mais il faudra s'assurer que les données sont valides en amont
+    role: user.role as "ADMIN" | "USER", 
+  }));
 
 /* async function toggleUserStatus(userId: string) {
   "use server";
