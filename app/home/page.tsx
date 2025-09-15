@@ -88,8 +88,9 @@ export default async function Home() {
 
              {/* Todo Section  bg-gray-50*/}                            
             <div>
+                {user && (
                 <div className="border-3 border-base-300 rounded-lg p-6 bg-base shadow-md mt-12">
-                    {user && (
+                    
                         <div className="flex items-center gap-3 mb-6">
                             <img src={user.imageUrl} alt="Avatar" className="w-10 h-10 rounded-full" />
                             <div>
@@ -97,9 +98,15 @@ export default async function Home() {
                                 <p className="text-sm text-gray-500">{user.primaryEmailAddress?.emailAddress}</p>
                             </div>
                         </div>
+<TodoList />
+                        </div>
                     )}
-                    <TodoList />
-                </div>
+
+                    
+
+
+                    
+                
             </div>
 
             {/* Features Section  bg-gray-50*/}

@@ -4,15 +4,19 @@ export const dynamic = "force-dynamic"; // Désactive le cache statique
 export const revalidate = 0; // Pas de cache
 import { requireAuth } from "@/lib/auth";
 import { BudgetList } from "./components/BudgetList";
-import Wrapper from "./components/Wrapper"; // Supposons que c'est un Client/Server Component
-import { Suspense } from "react"; // Importez Suspense
+import Wrapper from "./components/Wrapper";
+import { Suspense } from "react";
+import { currentUser } from "@clerk/nextjs/server";
+import TodoList from "./components/TodoList";
 
 
 
 // Composant de Page (maintenant un Server Component)
 export default async function  Home() {
   // Vérification d'authentification et d'autorisation
-      await requireAuth();
+  await requireAuth();
+  const user = await currentUser();
+  
   return (
     <Wrapper>
       <div className="flex items-center justify-center flex-col py-10 w-full">
@@ -30,6 +34,22 @@ export default async function  Home() {
             </div>}>
             <BudgetList /> {/* Le composant qui va chercher les données */}
           </Suspense>
+
+          {/* Todo Section - Affichée seulement si utilisateur connecté */}
+          {user && (
+            <div>
+              <div className="border-3 border-base-300 rounded-lg p-6 bg-base shadow-md mt-12">
+                <div className="flex items-center gap-3 mb-6">
+                  <img src={user.imageUrl} alt="Avatar" className="w-10 h-10 rounded-full" />
+                  <div>
+                    <p>{user.firstName} {user.lastName}</p>
+                    <p className="text-sm text-gray-500">{user.primaryEmailAddress?.emailAddress}</p>
+                  </div>
+                </div>
+                <TodoList />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Wrapper>
