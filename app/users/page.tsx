@@ -16,8 +16,10 @@ interface User {
   email: string;
   status: boolean;
   role: "ADMIN" | "USER";
+  theme: string;
   createdAt: Date;
 }
+
 
 /**
  * Page Users : affiche la liste des utilisateurs avec pagination et recherche

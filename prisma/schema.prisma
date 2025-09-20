@@ -55,6 +55,7 @@ model user {
   createdAt       DateTime          @default(now())
   role            String            @default("user") @db.VarChar(20)
   status          Boolean           @default(true)
+  theme           String            @default("retro") @db.VarChar(50)
   budget          budget[]
   testConnections test_connection[]
   transaction     transaction[]

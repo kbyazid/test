@@ -1101,3 +1101,10 @@ export async function updateTransaction(id: string, description: string, amount:
     data: { description, amount },
   });
 }
+
+export async function updateUserTheme(email: string, theme: string) {
+  return await prisma.user.update({
+    where: { email },
+    data: { theme },
+  });
+}

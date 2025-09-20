@@ -53,7 +53,7 @@ export default async function TodoList() {
   return (
     <div className="flex flex-col items-center justify-center mt-10">
       <h1 className="mb-4 text-4xl tracking-tight font-extrabold text-gray-700 sm:text-5xl md:text-6xl">
-                            <span className="block">Mes tâches en cours</span>
+                            <span className="block text-indigo-600">Mes tâches en cours</span>
                             {/* <span className="block text-indigo-600">vos finances</span> */}
       </h1>
 {/*       <h2 className="text-xl font-semibold text-gray-800 mb-4">Mes tâches en cours</h2> */}

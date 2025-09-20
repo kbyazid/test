@@ -12,6 +12,7 @@ export interface User {
     email: string;
     status: boolean;
     role: "ADMIN" | "USER";
+    theme: string;
   }
 
 export interface Budget {

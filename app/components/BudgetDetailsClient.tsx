@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Wrapper from "@/app/components/Wrapper";
-import { ArrowLeft, Send, Search, Calculator } from "lucide-react";
+import { ArrowLeft, Send, Search, Calculator as CalculatorIcon } from "lucide-react";
 import { Budget, Transaction } from "@/type";
 import BudgetItemPrct from "@/app/components/BudgetItemPrct";
 import { formatCurrency } from '@/lib/utils';
 import ClientLink from "@/app/components/ClientLink";
+import Calculator from "./Calculator";
 import {
   Bar,
   BarChart,
@@ -40,6 +41,7 @@ interface BudgetDetailsClientProps {
 export default function BudgetDetailsClient({ budget, initialTransactions }: BudgetDetailsClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPeriod, setCurrentPeriod] = useState("all");
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   // Filtrage côté client avec setCurrentPeriod → changement d'état local
   const [filteredTransactions, setFilteredTransactions] = useState(initialTransactions);
 
@@ -307,7 +309,16 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
                       />
                     </div> */}
                     <div className="justify-center card-actions">
-                        <Calculator className="text-blue-500 w-8 h-8" />
+                        <div 
+                          onClick={() => {
+                            console.log('Calculator icon clicked'); // Debug
+                            setCalculatorOpen(true);
+                          }}
+                          style={{ cursor: 'pointer', pointerEvents: 'auto', zIndex: 10 }}
+                          className="inline-block p-2 rounded hover:bg-gray-100"
+                        >
+                          <CalculatorIcon className="text-blue-500 w-8 h-8 hover:text-blue-700 transition-colors" />
+                        </div>
                         <div className="bg-base-200 p-4 rounded-lg w-full">
                             <div className="grid md:grid-cols-2 font-bold text-accent gap-4">
                                 <div className="text-center">
@@ -376,6 +387,10 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
           </div>
         )}
       </div>
+      <Calculator 
+        isOpen={calculatorOpen} 
+        onClose={() => setCalculatorOpen(false)} 
+      />
     </Wrapper>
   );
 }

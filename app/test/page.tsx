@@ -16,12 +16,15 @@ import {
     Trash, 
     View, 
     Plus,
-    Calculator,
+    Calculator as CalculatorIcon,
   } from 'lucide-react'   /* X: a joute */
   import Link from 'next/link'
 import DashboardCard from '../components/DashboardCard';
 import TransactionCard from '../components/TransactionCard';
 import { redirect } from 'next/navigation'
+import { BarChart, Bar, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useMemo } from 'react';
+import Calculator from '../components/Calculator';
 
 
 // Types et interfaces
@@ -53,6 +56,7 @@ const TransactionPage = () => {
   const [notification, setNotification] = useState<NotificationDetails | null>(null)  
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPeriod, setCurrentPeriod] = useState<Period>('all')
+  const [calculatorOpen, setCalculatorOpen] = useState(false)
 
  /*  const [filteredCount, setFilteredCount] = useState(0);
   const [filteredTotal, setFilteredTotal] = useState(0); */
@@ -215,6 +219,45 @@ const result = await getTotalTransactionAmountByEmailEffacer(email);
   const sum = filteredTransactions.reduce((acc, t) => {
     return t.type === 'income' ? acc + t.amount : acc - t.amount;
   }, 0);
+  // Données pour les graphiques
+  const chartData = useMemo(() => {
+    const monthlyData: { [key: string]: { income: number; expense: number; balance: number } } = {};
+    
+    transactions.forEach(transaction => {
+      const date = new Date(transaction.createdAt);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { income: 0, expense: 0, balance: 0 };
+      }
+      
+      if (transaction.type === 'income') {
+        // Exclure les recettes contenant "a nouveau" dans la description
+        if (!transaction.description.toLowerCase().includes('a nouveau')) {
+          monthlyData[monthKey].income += transaction.amount;
+        }
+      } else {
+        monthlyData[monthKey].expense += transaction.amount;
+      }
+    });
+    
+    // Calcul du solde cumulé et mensuel
+    let cumulativeBalance = 0;
+    return Object.entries(monthlyData)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, data]) => {
+        const monthlyBalance = data.income - data.expense;
+        cumulativeBalance += monthlyBalance;
+        return {
+          month: new Date(month + '-01').toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }),
+          income: data.income,
+          expense: data.expense,
+          monthlyBalance: monthlyBalance,
+          cumulativeBalance: cumulativeBalance
+        };
+      });
+  }, [transactions]);
+
   const filterLabel = (
     <>
     <div className="grid md:grid-cols-2 font-bold text-accent gap-4">
@@ -328,6 +371,66 @@ return (
           cardColor="expense"
         />
       </div>
+
+{/* Graphiques */}
+      {chartData.length > 0 && (
+        <div className="grid md:grid-cols-2 gap-4 mb-6">
+          {/* Graphique en barres - Recettes/Dépenses par mois */}
+          <div className="card w-full bg-base-150 shadow-md rounded-xl border-2 border-gray-300">
+            <div className="card-body">
+              <h2 className="card-title text-xl font-bold text-center">Recettes / Dépenses par mois</h2>
+              <ResponsiveContainer height={250} width="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip 
+                    formatter={(value: number, name: string) => [
+                      formatCurrency(value), 
+                      name === 'income' ? 'Recettes' : 'Dépenses'
+                    ]}
+                  />
+                  <Bar dataKey="income" fill="#10B981" name="income" />
+                  <Bar dataKey="expense" fill="#EF4444" name="expense" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Graphique composé - Évolution du solde avec barres */}
+          <div className="card w-full bg-base-150 shadow-md rounded-xl border-2 border-gray-300">
+            <div className="card-body">
+              <h2 className="card-title text-xl font-bold text-center">Évolution du solde</h2>
+              <ResponsiveContainer height={250} width="100%">
+                <ComposedChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip 
+                    formatter={(value: number, name: string) => [
+                      formatCurrency(value), 
+                      name === 'monthlyBalance' ? 'Solde mensuel' : 'Solde cumulé'
+                    ]}
+                  />
+                  <Bar 
+                    dataKey="monthlyBalance" 
+                    fill="#8B5CF6" 
+                    fillOpacity={0.6}
+                    name="monthlyBalance"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="cumulativeBalance" 
+                    stroke="#3B82F6" 
+                    strokeWidth={3}
+                    dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
 
 {/* Search and Filter */}
       {/* <div className="flex flex-col md:flex-row items-center gap-4 mb-6"> */}
@@ -456,7 +559,15 @@ return (
             <DashboardCard
               label={filterLabel}
               value={""}
-              icon={<Calculator className="text-blue-500 w-8 h-8" />}
+              icon={
+                <div 
+                  onClick={() => setCalculatorOpen(true)}
+                  style={{ cursor: 'pointer', pointerEvents: 'auto', zIndex: 10 }}
+                  className="inline-block p-2 rounded hover:bg-gray-100"
+                >
+                  <CalculatorIcon className="text-blue-500 w-8 h-8 hover:text-blue-700 transition-colors" />
+                </div>
+              }
             />
           </div>
         </div>
@@ -536,6 +647,10 @@ return (
           }}
         />
     )}
+    <Calculator 
+      isOpen={calculatorOpen} 
+      onClose={() => setCalculatorOpen(false)} 
+    />
   </Wrapper>
   )
 }

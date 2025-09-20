@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { 
   Home, 
@@ -8,8 +8,9 @@ import {
   FileText, 
   X,
   LogOut,
-  Table,
-  ListTodo
+  ListTodo,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 
 type Props = {
@@ -22,16 +23,29 @@ const menu = [
   { key: "home", label: "Accueil", icon: Home, href: "/" },
   { key: "dashboard", label: "Tableau de bord", icon: PieChart, href: "/dashboard" },
   { key: "budget", label: "Mes budgets", icon: CreditCard, href: "/budget" },
-  { key: "transaction", label: "Mes Transactions", icon: FileText, href: "/transaction" },
+  { 
+    key: "transaction", 
+    label: "Mes Transactions", 
+    icon: FileText, 
+    submenu: [
+      { key: "etat1", label: "Etat 1", href: "/transaction" },
+      { key: "etat2", label: "Etat 2", href: "/test" }
+    ]
+  },
   { key: "todos", label: "Mes tâches", icon: ListTodo, href: "/todos" },
   { key: "users", label: "Mes utilisateurs", icon: Users, href: "/users" },
-  { key: "test", label: "Transactions", icon: Table, href: "/test" },
 ];
 
 const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }) => {
+  const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>(null);
+  
   // Widths
   const wide = "w-64";
   const narrow = "w-20";
+  
+  const toggleSubmenu = (key: string) => {
+    setExpandedSubmenu(expandedSubmenu === key ? null : key);
+  };
 
   return (
     <>
@@ -51,13 +65,44 @@ const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }
             <ul className="space-y-2">
               {menu.map((m) => (
                 <li key={m.key}>
-                  <Link 
-                    href={m.href} 
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors"
-                  >
-                    <m.icon size={20} />
-                    {desktopExpanded && <span className="text-sm">{m.label}</span>}
-                  </Link>
+                  {m.submenu ? (
+                    <>
+                      <button 
+                        onClick={() => toggleSubmenu(m.key)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors w-full text-left"
+                      >
+                        <m.icon size={20} />
+                        {desktopExpanded && (
+                          <>
+                            <span className="text-sm flex-1">{m.label}</span>
+                            {expandedSubmenu === m.key ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          </>
+                        )}
+                      </button>
+                      {desktopExpanded && expandedSubmenu === m.key && (
+                        <ul className="ml-8 mt-2 space-y-1">
+                          {m.submenu.map((sub) => (
+                            <li key={sub.key}>
+                              <Link 
+                                href={sub.href}
+                                className="flex items-center px-4 py-2 rounded-lg hover:bg-[#334155] transition-colors text-sm"
+                              >
+                                {sub.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  ) : (
+                    <Link 
+                      href={m.href} 
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors"
+                    >
+                      <m.icon size={20} />
+                      {desktopExpanded && <span className="text-sm">{m.label}</span>}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -106,14 +151,43 @@ const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }
           <nav className="p-4 flex flex-col h-full">
             <ul className="space-y-2 flex-1">
               {menu.map((m) => (
-                <li key={m.key} onClick={onCloseMobile}>
-                  <Link 
-                    href={m.href} 
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors"
-                  >
-                    <m.icon size={20} />
-                    <span className="text-sm">{m.label}</span>
-                  </Link>
+                <li key={m.key}>
+                  {m.submenu ? (
+                    <>
+                      <button 
+                        onClick={() => toggleSubmenu(m.key)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors w-full text-left"
+                      >
+                        <m.icon size={20} />
+                        <span className="text-sm flex-1">{m.label}</span>
+                        {expandedSubmenu === m.key ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      </button>
+                      {expandedSubmenu === m.key && (
+                        <ul className="ml-8 mt-2 space-y-1">
+                          {m.submenu.map((sub) => (
+                            <li key={sub.key}>
+                              <Link 
+                                href={sub.href}
+                                onClick={onCloseMobile}
+                                className="flex items-center px-4 py-2 rounded-lg hover:bg-[#334155] transition-colors text-sm"
+                              >
+                                {sub.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  ) : (
+                    <Link 
+                      href={m.href} 
+                      onClick={onCloseMobile}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors"
+                    >
+                      <m.icon size={20} />
+                      <span className="text-sm">{m.label}</span>
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
