@@ -7,7 +7,7 @@ import { BudgetList } from "./components/BudgetList";
 import Wrapper from "./components/Wrapper";
 import { Suspense } from "react";
 import { currentUser } from "@clerk/nextjs/server";
-import TodoList from "./components/TodoList";
+/* import TodoList from "./components/TodoList"; */
 
 
 
@@ -16,6 +16,7 @@ export default async function  Home() {
   // Vérification d'authentification et d'autorisation
   await requireAuth();
   const user = await currentUser();
+  console.log(user);
   
   return (
     <Wrapper>
@@ -36,7 +37,7 @@ export default async function  Home() {
           </Suspense>
 
           {/* Todo Section - Affichée seulement si utilisateur connecté */}
-          {user && (
+{/*           {user && (
             <div>
               <div className="border-3 border-base-300 rounded-lg p-6 bg-base shadow-md mt-12">
                 <div className="flex items-center gap-3 mb-6">
@@ -49,7 +50,7 @@ export default async function  Home() {
                 <TodoList />
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </Wrapper>

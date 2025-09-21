@@ -20,16 +20,24 @@ type Props = {
 };
 
 const menu = [
-  { key: "home", label: "Accueil", icon: Home, href: "/" },
+  { key: "home", label: "Accueil", icon: Home, href: "/home" },
   { key: "dashboard", label: "Tableau de bord", icon: PieChart, href: "/dashboard" },
-  { key: "budget", label: "Mes budgets", icon: CreditCard, href: "/budget" },
+  { 
+    key: "budget", 
+    label: "Mes budgets", 
+    icon: CreditCard, 
+    submenu: [
+      { key: "saisie", label: "Saisie", href: "/budget" },
+      { key: "etat", label: "Visualisation", href: "/" }
+    ]
+  },
   { 
     key: "transaction", 
     label: "Mes Transactions", 
     icon: FileText, 
     submenu: [
-      { key: "etat1", label: "Etat 1", href: "/transaction" },
-      { key: "etat2", label: "Etat 2", href: "/test" }
+      { key: "etat1", label: "Periodique", href: "/transaction" },
+      { key: "etat2", label: "Recherche", href: "/test" }
     ]
   },
   { key: "todos", label: "Mes tâches", icon: ListTodo, href: "/todos" },
