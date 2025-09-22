@@ -10,8 +10,10 @@ import {
   LogOut,
   ListTodo,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Calculator as CalculatorIcon
 } from "lucide-react";
+import Calculator from "./Calculator";
 
 type Props = {
   desktopExpanded: boolean;
@@ -46,6 +48,7 @@ const menu = [
 
 const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }) => {
   const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>(null);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   
   // Widths
   const wide = "w-64";
@@ -116,8 +119,16 @@ const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }
             </ul>
           </nav>
           
-          {/* Bouton de déconnexion en bas */}
-          <div className="px-4 mt-auto">
+          {/* Calculatrice et déconnexion en bas */}
+          <div className="px-4 mt-auto space-y-2">
+            <button 
+              onClick={() => setCalculatorOpen(true)}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors w-full text-left"
+            >
+              <CalculatorIcon size={20} />
+              {desktopExpanded && <span className="text-sm">Calculatrice</span>}
+            </button>
+            
             <Link 
               href="/sign-in" 
               className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-600 transition-colors text-red-300 hover:text-white"
@@ -200,8 +211,19 @@ const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }
               ))}
             </ul>
             
-            {/* Bouton de déconnexion en bas */}
-            <div className="mt-auto">
+            {/* Calculatrice et déconnexion en bas */}
+            <div className="mt-auto space-y-2">
+              <button 
+                onClick={() => {
+                  setCalculatorOpen(true);
+                  onCloseMobile();
+                }}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors w-full text-left"
+              >
+                <CalculatorIcon size={20} />
+                <span className="text-sm">Calculatrice</span>
+              </button>
+              
               <Link 
                 href="/sign-in" 
                 className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-600 transition-colors text-red-300 hover:text-white"
@@ -222,6 +244,12 @@ const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }
       {!desktopExpanded && (
         <div className="hidden lg:block" style={{ width: '5rem' }}></div>
       )}
+      
+      {/* Calculator Modal */}
+      <Calculator 
+        isOpen={calculatorOpen} 
+        onClose={() => setCalculatorOpen(false)} 
+      />
     </>
   );
 };

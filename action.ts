@@ -1108,3 +1108,11 @@ export async function updateUserTheme(email: string, theme: string) {
     data: { theme },
   });
 }
+
+export async function getUserTheme(email: string) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { theme: true },
+  });
+  return user?.theme || "light";
+}

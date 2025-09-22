@@ -5,6 +5,7 @@ import { checkAndAddUser } from "@/action";
 import { useEffect, useState } from "react";
 import { Menu, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import ThemePalette from "./ThemePalette";
 
 type NavbarProps = {
   onToggleDesktop: () => void;
@@ -81,6 +82,9 @@ const Navbar = ({ onToggleDesktop, onToggleMobile, desktopExpanded }: NavbarProp
                 {/* Theme toggle */}
                 <ThemeToggle />
                 
+                {/* Theme palette */}
+                <ThemePalette />
+                
                 {/* Bouton de déconnexion */}
                 <SignOutButton redirectUrl="/">
                   <button className="flex items-center justify-center w-8 h-8 text-white hover:bg-red-600 rounded transition-colors">
@@ -103,8 +107,6 @@ const Navbar = ({ onToggleDesktop, onToggleMobile, desktopExpanded }: NavbarProp
                   Se connecter
                 </Link>
               </div>
-              <ThemeToggle />
-              {/* Theme toggle */}
 {/*               <div className="flex-none">
                 <label className="swap swap-rotate cursor-pointer transition-transform hover:scale-125">
                   <input onClick={toggleTheme} type="checkbox" />
