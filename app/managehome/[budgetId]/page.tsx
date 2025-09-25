@@ -1,7 +1,8 @@
 import Wrapper from "@/app/components/Wrapper";
 import { getBudgetAndTransactions } from "@/app/data/data";
-import BudgetDetailsClient from "@/app/components/BudgetDetailsClient";
-import ClientLink from "@/app/components/ClientLink"; // Importez le ClientLink
+/* import BudgetDetailsClient from "@/app/components/BudgetDetailsClient"; */
+import ClientLink from "@/app/components/ClientLink";
+import BudgetDetailsWithCache from "@/app/components/BudgetDetailsWithCache";
 
 interface BudgetDetailsPageProps {
     params: Promise<{ budgetId: string }>; // Mise à jour pour indiquer que params est une Promise
@@ -35,6 +36,10 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
     const { budget, transactions } = result.data!;
 
     return (
-        <BudgetDetailsClient budget={budget} initialTransactions={transactions} />
+        <BudgetDetailsWithCache 
+            budgetId={budgetId}
+            fallbackBudget={budget} 
+            fallbackTransactions={transactions} 
+        />
     );
 }

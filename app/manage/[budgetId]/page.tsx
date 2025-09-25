@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
 import AddTransactionButton from "@/app/components/AddTransactionButton";
 import ModBudgetAmount from "@/app/components/ModBudgetAmount";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import CacheUpdater from "@/app/components/CacheUpdater";
 import ClientLink from "@/app/components/ClientLink";
 
 interface BudgetDetailsPageProps {
@@ -91,6 +92,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
   
   return (
     <Wrapper>
+      <CacheUpdater budgetId={budgetId} budget={budget} transactions={transactions} />
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <div className="flex gap-2">
