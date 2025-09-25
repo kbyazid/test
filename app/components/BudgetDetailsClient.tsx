@@ -16,6 +16,7 @@ import {
   Tooltip,
   XAxis,
 } from "recharts";
+/* import Link from 'next/link'; */
 
 // Définissez les mois ici pour la sélection
 const months = [
@@ -186,11 +187,19 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
    return (
     <Wrapper>
       <div className="mb-6">
-        <ClientLink href="/">
-          <div className="btn btn-ghost mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Retour
-          </div>
-        </ClientLink>
+    
+        <div className="flex gap-2 mb-4">
+          <ClientLink href="/">
+            <div className="btn btn-ghost">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Retour
+            </div>
+          </ClientLink>
+          <ClientLink href={`/manage/${budget.id}`}>
+            <div className="btn btn-accent">
+              Saisie
+            </div>
+          </ClientLink>
+        </div>
         {budget && (
           <div className='flex md:flex-row flex-col'>
             <div className='md:w-1/3'>

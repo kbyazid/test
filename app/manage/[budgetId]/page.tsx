@@ -11,6 +11,7 @@ import { revalidatePath } from "next/cache";
 import AddTransactionButton from "@/app/components/AddTransactionButton";
 import ModBudgetAmount from "@/app/components/ModBudgetAmount";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import ClientLink from "@/app/components/ClientLink";
 
 interface BudgetDetailsPageProps {
   params: Promise<{ budgetId: string }>; // Mise à jour pour indiquer que params est une Promise
@@ -92,10 +93,20 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
     <Wrapper>
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
-          <Link href="/budget" className="btn btn-ghost">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour
-          </Link>
+          <div className="flex gap-2">
+            <ClientLink href="/budget">
+                      <div className="btn btn-ghost mb-4">
+                        <ArrowLeft className="w-4 h-4 mr-2" /> Retour
+                      </div>
+            </ClientLink>
+            {/* <Link href="/budget" className="btn btn-primary">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Retour
+            </Link> */}
+            <Link href={`/managehome/${budgetId}`} className="btn btn-accent">
+              Visualisation
+            </Link>
+          </div>
           <ModBudgetAmount
             budgetId={budgetId}
             currentAmount={budget.amount}
