@@ -97,14 +97,10 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
         <div className="flex justify-between items-center mb-4">
           <div className="flex gap-2">
             <ClientLink href="/budget">
-                      <div className="btn btn-ghost mb-4">
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Retour
-                      </div>
+              <div className="btn btn-ghost">
+                <ArrowLeft className="w-4 h-4 mr-2" /> Retour
+              </div>
             </ClientLink>
-            {/* <Link href="/budget" className="btn btn-primary">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Retour
-            </Link> */}
             <Link href={`/managehome/${budgetId}`} className="btn btn-accent">
               Visualisation
             </Link>

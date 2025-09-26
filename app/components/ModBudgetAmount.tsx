@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Edit } from "lucide-react";
 import { updateBudgetAmount } from "@/action";
+import { formatCurrency } from "@/lib/utils";
 
 interface ModBudgetAmountProps {
   budgetId: string;
@@ -54,7 +55,7 @@ export default function ModBudgetAmount({
   return (
     <>
       <button
-        className="btn btn-outline btn-sm"
+        className="btn btn-outline "
         onClick={openModal}
         aria-label="Modifier le montant du budget"
       >
@@ -71,7 +72,7 @@ export default function ModBudgetAmount({
           </form>
           <h3 className="font-bold text-lg">Modifier le montant du budget</h3>
           <p className="py-4">
-            Dépenses actuelles: <span className="font-bold">{totalSpent}€</span>
+            Dépenses actuelles: <span className="font-bold">{formatCurrency(totalSpent)}</span>
             <br />
             Le nouveau montant doit être supérieur ou égal aux dépenses actuelles.
           </p>
