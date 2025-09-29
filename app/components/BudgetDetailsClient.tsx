@@ -77,15 +77,20 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
     // Logique pour consolider les dépenses (fonctionne sur les transactions filtrées)
     const consolidatedExpensesSummary = useMemo(() => {
         const consolidatedExpenses: { [key: string]: number } = {};
+        let totalExpenses = 0;
+        
         filteredTransactions.forEach((transaction: Transaction) => {
             if (transaction.type !== "income") {
                 const key = transaction.description.trim().split(' ')[0].substring(0, 5).toLowerCase();
                 consolidatedExpenses[key] = (consolidatedExpenses[key] || 0) + transaction.amount;
+                totalExpenses += transaction.amount;
             }
         });
+        
         return Object.keys(consolidatedExpenses).map(key => ({
             description: key.charAt(0).toUpperCase() + key.slice(1),
             totalAmount: consolidatedExpenses[key],
+            percentage: totalExpenses > 0 ? Math.round((consolidatedExpenses[key] / totalExpenses) * 100) : 0
         }));
     }, [filteredTransactions]);
 
@@ -213,7 +218,7 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
                     <ul className="space-y-2">
                       {consolidatedExpensesSummary.map((item, index) => (
                         <li key={index} className="p-2 bg-base-200 rounded-lg shadow flex justify-between items-center">
-                          <span className="font-medium text-base-800">{item.description}</span>
+                          <span className="font-medium text-base-800">{item.description} ({item.percentage}%)</span>
                           <span className="text-sky-600 font-bold">{formatCurrency(item.totalAmount)}</span>
                         </li>
                       ))}

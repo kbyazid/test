@@ -106,9 +106,7 @@ export default function EditTransactionButton({
             
             <div className="space-y-4">
               <div>
-                <label className="label justify-start">
-                  <span className="label-text text-left">Description</span>
-                </label>
+                <label className="floating-label">
                 <input
                   type="text"
                   value={editDescription}
@@ -116,12 +114,14 @@ export default function EditTransactionButton({
                   className="input input-bordered w-full"
                   placeholder="Description de la transaction"
                 />
+                <span className="text-accent font-bold ">Description</span>
+                </label>
               </div>
               
               <div>
-                <label className="label justify-start">
-                  <span className="label-text">Montant</span>
-                </label>
+                <label className="floating-label">
+                  
+                
                 <input
                   type="number"
                   step="0.01"
@@ -131,6 +131,8 @@ export default function EditTransactionButton({
                   className="input input-bordered w-full"
                   placeholder="0.00"
                 />
+                <span className="text-accent font-bold">Montant</span>
+                </label>
               </div>
             </div>
             
