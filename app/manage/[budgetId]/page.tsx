@@ -94,14 +94,14 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
     <Wrapper>
       <CacheUpdater budgetId={budgetId} budget={budget} transactions={transactions} />
       <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center gap-4 mb-4">
           <div className="flex gap-2">
             <ClientLink href="/budget">
               <div className="btn btn-ghost">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Retour
               </div>
             </ClientLink>
-            <Link href={`/managehome/${budgetId}`} className="btn btn-accent">
+            <Link href={`/managehome/${budgetId}`} className="btn btn-accent hover:bg-white hover:text-purple-600 transition">
               Visualisation
             </Link>
           </div>

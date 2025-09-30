@@ -22,9 +22,12 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
+  YAxis,
 } from "recharts";
 import TransactionItem from "../components/TransactionItem";
 import BudgetItem from "../components/BudgetItem";
@@ -122,6 +125,26 @@ const DashboardPage = () => {
       const totalSum = expensesSlice.reduce((sum, expense) => sum + expense.totalAmount, 0);
       const average = totalSum / daysToShow;
 
+      // Calcul des moyennes mensuelles pour l'évolution
+      const currentYear = new Date().getFullYear();
+      const monthlyAverages = [];
+      const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+      
+      for (let month = 0; month < 12; month++) {
+        const monthExpenses = dailyExpenses.filter(expense => {
+          const expenseDate = new Date(expense.date);
+          return expenseDate.getFullYear() === currentYear && expenseDate.getMonth() === month;
+        });
+        
+        const monthTotal = monthExpenses.reduce((sum, expense) => sum + expense.totalAmount, 0);
+        const daysInMonth = monthExpenses.length || 1;
+        
+        monthlyAverages.push({
+          month: months[month],
+          average: monthTotal / daysInMonth
+        });
+      }
+
   return (
     <Wrapper>
       <div className="space-y-6 mb-2 flex flex-row justify-between gap-4">
@@ -163,32 +186,55 @@ const DashboardPage = () => {
             {/* section : Graphe - Budgets - dreniere depenses - dep par journee*/}
             <div className="w-full md:flex mt-4">
               <div className="rounded-xl md:w-2/3">
-                <div className="border-2 border-base-300 p-5 rounded-xl">
+                <div className="grid md:grid-cols gap-4">
+                  <div className="border-2 border-base-300 p-5 rounded-xl">
+                    <h3 className="text-lg font-semibold mb-3">
+                      Dépenses par Budget
+                    </h3>
+                    <ResponsiveContainer height={250} width="100%">
+                      <BarChart width={730} height={250} data={budgetData}>
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="budgetName"
+                          tick={renderCustomAxisTick}
+                          interval={0}
+                        />
+                        <Tooltip />
+                        <Bar
+                          name="Budget"
+                          dataKey="totalBudgetAmount"
+                          fill="#EF9FBC"
+                          radius={[10, 10, 0, 0]}
+                        />
+                        <Bar
+                          name="Dépensé"
+                          dataKey="totalTransactionsAmount"
+                          fill="#EEAF3A"
+                          radius={[10, 10, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                </div>
+                <div className="mt-4 border-2 border-base-300 p-5 rounded-xl">
                   <h3 className="text-lg font-semibold mb-3">
-                    Statistiques ( en Da )
+                    Évolution des Moyennes Mensuelles ({currentYear})
                   </h3>
-                  <ResponsiveContainer height={250} width="100%">
-                    <BarChart width={730} height={250} data={budgetData}>
-                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="budgetName"
-                        tick={renderCustomAxisTick}
-                        interval={0}
+                  <ResponsiveContainer height={200} width="100%">
+                    <LineChart data={monthlyAverages}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(value: number) => [formatCurrency(value), 'Moyenne']} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="average" 
+                        stroke="#10B981" 
+                        strokeWidth={2}
+                        dot={{ fill: '#10B981' }}
                       />
-                      <Tooltip />
-                      <Bar
-                        name="Budget"
-                        dataKey="totalBudgetAmount"
-                        fill="#EF9FBC"
-                        radius={[10, 10, 0, 0]}
-                      />
-                      <Bar
-                        name="Dépensé"
-                        dataKey="totalTransactionsAmount"
-                        fill="#EEAF3A"
-                        radius={[10, 10, 0, 0]}
-                      />
-                    </BarChart>
+                    </LineChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="mt-4 border-2 border-base-300 p-5 rounded-xl">
@@ -272,13 +318,33 @@ const DashboardPage = () => {
                           </li>
                         )} */}
 
-                          <li className="flex justify-between items-center py-2 font-bold text-info">
+{/*                           <li className="flex justify-between items-center py-2 font-bold text-info">
                             <span>Moyenne dépensée:</span>
                             <span className="text-lg">{formatCurrency(average)}</span>
-                          </li>
+                          </li> */}
+
 
                       </ul>
+                      
                     )}
+                    <div className="border-2 border-base-300 p-5 rounded-xl">
+                    <h3 className="text-lg font-semibold mb-3">
+                      Moyenne des Dépenses 
+                    </h3>
+                    <div className="flex items-center justify-center ">
+                      <div className="text-center">
+                        <div className="text-4xl font-bold text-accent mb-2">
+                          {formatCurrency(average)}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Moyenne mensuelle
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          Basée sur {daysToShow} derniers jours
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
