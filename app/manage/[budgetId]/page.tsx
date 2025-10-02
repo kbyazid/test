@@ -101,7 +101,11 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
                 <ArrowLeft className="w-4 h-4 mr-2" /> Retour
               </div>
             </ClientLink>
-            <Link href={`/managehome/${budgetId}`} className="btn btn-accent hover:bg-white hover:text-purple-600 transition">
+            <Link 
+              href={`/managehome/${budgetId}`} 
+              className="btn btn-outline btn-accent flex items-center gap-2 bg-base-600 hover:bg-base-700 px-6 py-3 rounded-lg transition-all duration-200 font-medium whitespace-nowrap shadow-sm hover:shadow-md transform hover:-translate-y-0.5" 
+              /* className="btn btn-accent hover:bg-white hover:text-purple-600 transition" */
+              >
               Visualisation
             </Link>
           </div>

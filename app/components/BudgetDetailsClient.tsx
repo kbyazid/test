@@ -200,7 +200,9 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
             </div>
           </ClientLink>
           <ClientLink href={`/manage/${budget.id}`}>
-            <div className="btn btn-accent">
+            <div 
+               className="btn btn-outline btn-accent flex items-center gap-2 bg-base-600 hover:bg-base-700 px-6 py-3 rounded-lg transition-all duration-200 font-medium whitespace-nowrap shadow-sm hover:shadow-md transform hover:-translate-y-0.5" 
+              >
               Saisie
             </div>
           </ClientLink>

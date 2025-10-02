@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/lib/utils";
 import { Budget } from "@/type";
 
 interface BudgetItemProps {
@@ -38,7 +39,7 @@ const BudgetItem = ({ budget , enableHover, depenseColor = "text-gray-500"}: Bud
                         </span>
                     </div>
                 </div>
-                <div className="text-xl font-bold text-accent">{budget.amount} Da</div>
+                <div className="text-xl font-bold text-accent">{formatCurrency(budget.amount)}</div>
             </div>
             <div className="flex justify-between items-center mt-4 text-gray-500 text-sm">
                 <span className={depenseColor}>{totalTransactionAmount} Da dépensés</span>

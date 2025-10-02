@@ -51,6 +51,7 @@ const DashboardPage = () => {
   const { user } = useUser()
   const [totalAmount, setTotalAmount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [totalCount, setTotalCount] = useState<number | null>(null);
   const [reachedBudgetsRatio, setReachedBudgetsRatio] = useState<string | null>(
@@ -87,18 +88,21 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-       if (!user?.primaryEmailAddress?.emailAddress) return
+      if (!user?.primaryEmailAddress?.emailAddress) return
       setIsLoading(true);
+      setError(null);
       try {
-
         const email = user.primaryEmailAddress.emailAddress;
-        const amount = await getTotalTransactionAmount(email);
-        const count = await getTransactionCount(email);
-        const reachedBudgets = await getReachedBudgets(email);
-        const budgetsData = await getUserBudgetData(email);
-        const lastTransactions = await getLastTransactions(email);
-        const lastBudgets = await getLastBudgets(email);
-        const dailySummary = await getDailyExpensesSummary(email); // <--- Appel de la nouvelle fonction
+        const [amount, count, reachedBudgets, budgetsData, lastTransactions, lastBudgets, dailySummary] = 
+          await Promise.all([
+            getTotalTransactionAmount(email),
+            getTransactionCount(email),
+            getReachedBudgets(email),
+            getUserBudgetData(email),
+            getLastTransactions(email),
+            getLastBudgets(email),
+            getDailyExpensesSummary(email)
+          ]);
 
         setTotalAmount(amount);
         setTotalCount(count);
@@ -106,16 +110,16 @@ const DashboardPage = () => {
         setBudgetData(budgetsData);
         setTransactions(lastTransactions);
         setBudgets(lastBudgets);
-        setDailyExpenses(dailySummary); // <--- Mise à jour du nouvel état
-        setIsLoading(false);
+        setDailyExpenses(dailySummary);
       } catch (error) {
-        console.error("Erreur lors de la récupération des données :", error);
+        console.error("Erreur :", error);
+        setError("Impossible de charger les données");
       } finally {
         setIsLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [user]);
 
 
  /*  console.log(dailyExpenses) */
@@ -156,6 +160,7 @@ const DashboardPage = () => {
         </div>
       </div>
       <div className="p-4">
+        {error && <div className="alert alert-error mb-4">{error}</div>}
         {isLoading ? (
           <div className="flex justify-center items-center h-32">
             <div className="flex justify-center items-center py-10">
