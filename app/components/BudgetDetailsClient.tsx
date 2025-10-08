@@ -138,6 +138,43 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
             .filter(item => item.amount > 0); // Afficher seulement les mois avec des dépenses
     }, [initialTransactions]);
 
+    // Calcul des dépenses filtrées par mois pour le nouveau graphique
+    const filteredMonthlyExpenses = useMemo(() => {
+        const expensesByMonth: { [key: string]: number } = {};
+        const currentYear = new Date().getFullYear();
+        
+        // Initialiser tous les mois de l'année courante à 0
+        for (let i = 0; i < 12; i++) {
+            const monthKey = `${currentYear}-${String(i + 1).padStart(2, '0')}`;
+            expensesByMonth[monthKey] = 0;
+        }
+        
+        filteredTransactions.forEach((transaction: Transaction) => {
+            if (transaction.type !== "income") {
+                const date = new Date(transaction.createdAt);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                
+                if (expensesByMonth[monthKey] !== undefined) {
+                    expensesByMonth[monthKey] += transaction.amount;
+                }
+            }
+        });
+        
+        return Object.entries(expensesByMonth)
+            .map(([key, amount]) => {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const [year, month] = key.split('-');
+                const monthIndex = parseInt(month) - 1;
+                return {
+                    month: months[monthIndex]?.label || 'Inconnu',
+                    amount: amount,
+                    key: key
+                };
+            })
+            .sort((a, b) => a.key.localeCompare(b.key))
+            .filter(item => item.amount > 0); // Afficher seulement les mois avec des dépenses
+    }, [filteredTransactions]);
+
     // Calcul des dépenses par semaine pour le mois sélectionné
     const weeklyExpenses = useMemo(() => {
         if (currentPeriod === 'all') return [];
@@ -250,6 +287,34 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
                       <Bar
                         dataKey="amount"
                         fill="#EF4444"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+            
+            {/* Graphique des dépenses filtrées par mois */}
+            {filteredMonthlyExpenses.length > 0 && (currentPeriod !== 'all' || searchQuery) && (
+              <div className="card w-full bg-base-150 card-md shadow-md rounded-xl border-2 border-gray-300 mb-4 mx-2">
+                <div className="card-body">
+                  <h2 className="card-title text-xl font-bold text-center">Dépenses filtrées par mois</h2>
+                  <ResponsiveContainer height={200} width="100%">
+                    <BarChart data={filteredMonthlyExpenses}>
+                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="month" 
+                        tick={{ fontSize: 12 }}
+                        interval={0}
+                      />
+                      <Tooltip 
+                        formatter={(value: number) => [formatCurrency(value), 'Dépenses filtrées']}
+                        labelStyle={{ color: '#333' }}
+                      />
+                      <Bar
+                        dataKey="amount"
+                        fill="#10B981"
                         radius={[4, 4, 0, 0]}
                       />
                     </BarChart>

@@ -1,22 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
-import {
-  getLastBudgets,
-  getLastTransactions,
-  getReachedBudgets,
-  getTotalTransactionAmount,
-  getTransactionCount,
-  getUserBudgetData,
-  getDailyExpensesSummary, // <--- Importez la nouvelle fonction
-} from "@/action";
-import { DailyExpense } from "@/action"; // <--- Importez l'interface DailyExpense
 import Wrapper from "../components/Wrapper";
 import {
   CircleDollarSignIcon,
   Landmark,
   ListIcon,
 } from "lucide-react";
-import { Budget, Transaction } from "@/type";
 import DashboardCard from "../components/DashboardCard";
 import {
   Bar,
@@ -24,6 +12,7 @@ import {
   CartesianGrid,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -34,34 +23,40 @@ import BudgetItem from "../components/BudgetItem";
 import Link from "next/link";
 import { formatCurrency } from '@/lib/utils'
 import { useUser } from '@clerk/nextjs'
+import { useDashboardData } from '@/hooks/useDashboardData';
+import { useExpenseStats } from '@/hooks/useExpenseStats';
+import { useMonthlyAverages } from '@/hooks/useMonthlyAverages';
 
 interface AxisTickPayload {
   value: string | number;
   coordinate: number;
 }
 
-interface BudgetSummary {
+/* interface BudgetSummary {
   budgetName: string;
   totalBudgetAmount: number;
   totalTransactionsAmount: number;
-}
+} */
 
 
 const DashboardPage = () => {
-  const { user } = useUser()
-  const [totalAmount, setTotalAmount] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user } = useUser();
+  const email = user?.primaryEmailAddress?.emailAddress;
+  
+  const { data, isLoading, error } = useDashboardData(email);
+  const expenseStats = useExpenseStats(data?.dailyExpenses || []);
+  const monthlyAverages = useMonthlyAverages(data?.dailyExpenses || []);
+  
+  // Calcul de la moyenne des moyennes mensuelles (en omettant les zéros)
+  const nonZeroAverages = monthlyAverages.filter(item => item.average > 0);
+  const overallAverage = nonZeroAverages.length > 0 
+    ? nonZeroAverages.reduce((sum, item) => sum + item.average, 0) / nonZeroAverages.length 
+    : 0;
 
-  const [totalCount, setTotalCount] = useState<number | null>(null);
-  const [reachedBudgetsRatio, setReachedBudgetsRatio] = useState<string | null>(
-    null
-  );
-
-  const [budgetData, setBudgetData] = useState<BudgetSummary[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [dailyExpenses, setDailyExpenses] = useState<DailyExpense[]>([]); // <--- Nouvel état pour les dépenses journalières
+  // Couleur adaptative pour le thème
+  /* const labelColor = typeof window !== 'undefined' 
+    ? getComputedStyle(document.documentElement).getPropertyValue('--bc') || '#374151'
+    : '#374151'; */
 
   const renderCustomAxisTick = ({
     x,
@@ -86,68 +81,30 @@ const DashboardPage = () => {
     );
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user?.primaryEmailAddress?.emailAddress) return
-      setIsLoading(true);
-      setError(null);
-      try {
-        const email = user.primaryEmailAddress.emailAddress;
-        const [amount, count, reachedBudgets, budgetsData, lastTransactions, lastBudgets, dailySummary] = 
-          await Promise.all([
-            getTotalTransactionAmount(email),
-            getTransactionCount(email),
-            getReachedBudgets(email),
-            getUserBudgetData(email),
-            getLastTransactions(email),
-            getLastBudgets(email),
-            getDailyExpensesSummary(email)
-          ]);
+  if (error) {
+    return (
+      <Wrapper>
+        <div className="alert alert-error">{error}</div>
+      </Wrapper>
+    );
+  }
 
-        setTotalAmount(amount);
-        setTotalCount(count);
-        setReachedBudgetsRatio(reachedBudgets);
-        setBudgetData(budgetsData);
-        setTransactions(lastTransactions);
-        setBudgets(lastBudgets);
-        setDailyExpenses(dailySummary);
-      } catch (error) {
-        console.error("Erreur :", error);
-        setError("Impossible de charger les données");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, [user]);
+  if (isLoading) {
+    return (
+      <Wrapper>
+        <div className="flex justify-center items-center h-32">
+          <div className="flex justify-center items-center py-10">
+            <span className="loading loading-spinner loading-lg text-accent"></span>
+            <span className="ml-4 font-bold text-accent">Chargement...</span>
+          </div>
+        </div>
+      </Wrapper>
+    );
+  }
 
+  if (!data) return null;
 
- /*  console.log(dailyExpenses) */
-
-      const daysToShow = Math.min(dailyExpenses.length, 30);
-      const expensesSlice = dailyExpenses.slice(0, daysToShow);
-      const totalSum = expensesSlice.reduce((sum, expense) => sum + expense.totalAmount, 0);
-      const average = totalSum / daysToShow;
-
-      // Calcul des moyennes mensuelles pour l'évolution
-      const currentYear = new Date().getFullYear();
-      const monthlyAverages = [];
-      const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-      
-      for (let month = 0; month < 12; month++) {
-        const monthExpenses = dailyExpenses.filter(expense => {
-          const expenseDate = new Date(expense.date);
-          return expenseDate.getFullYear() === currentYear && expenseDate.getMonth() === month;
-        });
-        
-        const monthTotal = monthExpenses.reduce((sum, expense) => sum + expense.totalAmount, 0);
-        const daysInMonth = monthExpenses.length || 1;
-        
-        monthlyAverages.push({
-          month: months[month],
-          average: monthTotal / daysInMonth
-        });
-      }
+  const currentYear = new Date().getFullYear();
 
   return (
     <Wrapper>
@@ -174,17 +131,17 @@ const DashboardPage = () => {
             <div className="grid md:grid-cols-3 gap-4">
               <DashboardCard
                 label="Total des depenses"
-                value={totalAmount !== null ? `${formatCurrency(totalAmount)}` : "N/A"}
+                value={formatCurrency(data.totalAmount)}
                 icon={<CircleDollarSignIcon />}
               />
               <DashboardCard
                 label="Nombre de transactions"
-                value={totalCount !== null ? `${totalCount}` : "N/A"}
+                value={data.totalCount.toString()}
                 icon={<ListIcon />}
               />
               <DashboardCard
                 label="Budgets atteints"
-                value={reachedBudgetsRatio || "N/A"}
+                value={data.reachedBudgetsRatio}
                 icon={<Landmark />}
               />
             </div>
@@ -197,7 +154,7 @@ const DashboardPage = () => {
                       Dépenses par Budget
                     </h3>
                     <ResponsiveContainer height={250} width="100%">
-                      <BarChart width={730} height={250} data={budgetData}>
+                      <BarChart width={730} height={250} data={data.budgetData}>
                         <CartesianGrid vertical={false} strokeDasharray="3 3" />
                         <XAxis
                           dataKey="budgetName"
@@ -239,6 +196,17 @@ const DashboardPage = () => {
                         strokeWidth={2}
                         dot={{ fill: '#10B981' }}
                       />
+                      <ReferenceLine 
+                        y={overallAverage} 
+                        stroke="#EF4444" 
+                        strokeWidth={2}
+                        strokeDasharray="5 5"
+                        label={{ 
+                          value: `Moyenne: ${formatCurrency(overallAverage)}`, 
+                          /* position: 'topRight', */
+                          style: { fill: '#F59E0B', fontWeight: 'bold' }
+                        }}
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -247,7 +215,7 @@ const DashboardPage = () => {
                     Dernieres Depenses
                   </h3>
                   <ul className="divide-y divide-base-300">
-                    {transactions.map((transaction) => (
+                    {data.transactions.map((transaction) => (
                       <TransactionItem
                         key={transaction.id}
                         transaction={transaction}
@@ -261,7 +229,7 @@ const DashboardPage = () => {
                   Derniers Budgets Crees
                 </h3>
                 <ul className="grid grid-cols-1 gap-4">
-                  {budgets.map((budget) => (
+                  {data.budgets.map((budget) => (
                     <Link href={`/manage/${budget.id}`} key={budget.id}>
                       <BudgetItem budget={budget} enableHover={1} />
                     </Link>
@@ -274,7 +242,7 @@ const DashboardPage = () => {
                     Récapitulatif des Dépenses par Journée (30 Derniers jours)
                   </h3>
                  {/*  </div> */}
-                  {dailyExpenses.length === 0 ? (
+                  {data.dailyExpenses.length === 0 ? (
                     <p className="text-gray-500">Aucune dépense enregistrée par journée.</p>
                   ) : (
                     <ul className="divide-y divide-base-300">
@@ -293,7 +261,7 @@ const DashboardPage = () => {
                           </span>
                         </li>       
                       ))} */}
-                          {expensesSlice.map((expense) => (
+                          {expenseStats.expensesSlice.map((expense) => (
                             <li key={expense.date} className="flex justify-between items-center py-2">
                               <span className="font-bold text-accent">
                                 {new Date(expense.date).toLocaleDateString('fr-FR', {
@@ -339,13 +307,13 @@ const DashboardPage = () => {
                     <div className="flex items-center justify-center ">
                       <div className="text-center">
                         <div className="text-4xl font-bold text-accent mb-2">
-                          {formatCurrency(average)}
+                          {formatCurrency(expenseStats.average)}
                         </div>
                         <div className="text-sm text-gray-500">
                           Moyenne mensuelle
                         </div>
                         <div className="text-xs text-gray-400 mt-1">
-                          Basée sur {daysToShow} derniers jours
+                          Basée sur {expenseStats.daysToShow} derniers jours
                         </div>
                       </div>
                     </div>
