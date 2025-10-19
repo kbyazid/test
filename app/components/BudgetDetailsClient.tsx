@@ -192,7 +192,7 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
                 
                 // Filtrer les 6 derniers mois
                 if (transactionDate >= sixMonthsAgo) {
-                    const nature = transaction.description.trim().split(' ')[0].substring(0, 8).toLowerCase();
+                    const nature = transaction.description.trim().split(' ')[0].substring(0, 5).toLowerCase();
                     const monthLabel = months[transactionDate.getMonth()]?.label || 'Inconnu';
                     
                     if (!data[nature]) {
