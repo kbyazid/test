@@ -324,12 +324,22 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
                   <div className="mt-8 border-2 border-base-300 p-5 rounded-xl">
                     <h2 className="text-xl text-accent font-bold mb-2 text-center">Synthèse des dépenses par nature</h2>
                     <ul className="space-y-2">
-                      {consolidatedExpensesSummary.map((item, index) => (
-                        <li key={index} className="p-2 bg-base-200 rounded-lg shadow flex justify-between items-center">
-                          <span className="font-medium text-base-800">{item.description} ({item.percentage}%)</span>
-                          <span className="text-sky-600 font-bold">{formatCurrency(item.totalAmount)}</span>
-                        </li>
-                      ))}
+                      {consolidatedExpensesSummary.map((item, index) => {
+                        const colorIndex = uniqueNatures.findIndex(nature => nature === item.description.toLowerCase());
+                        const color = colorIndex !== -1 ? natureColors[colorIndex % natureColors.length] : '#6B7280';
+                        return (
+                          <li key={index} className="p-2 bg-base-200 rounded-lg shadow flex justify-between items-center">
+                            <div className="flex items-center">
+                              <div 
+                                className="w-4 h-4 rounded-full mr-3" 
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="font-medium text-base-800">{item.description} ({item.percentage}%)</span>
+                            </div>
+                            <span className="text-sky-600 font-bold">{formatCurrency(item.totalAmount)}</span>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 </div>
