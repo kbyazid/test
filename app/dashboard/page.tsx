@@ -226,7 +226,7 @@ const DashboardPage = () => {
               </div>
               <div className="md:w-1/3 ml-4">
                 <h3 className="text-lg font-semibold my-4 md:mb-4 md:mt-0">
-                  Derniers Budgets Crees
+                  Derniers Budgets Modifiés
                 </h3>
                 <ul className="grid grid-cols-1 gap-4">
                   {data.budgets.map((budget) => (

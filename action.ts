@@ -986,6 +986,50 @@ export const getLastBudgets = async (email:string) => {
   }
 }
 
+export const getLastUpdatedBudgets = async (email: string) => {
+  try {
+    // Récupérer les dernières transactions avec leurs budgets
+    const recentTransactions = await prisma.transaction.findMany({
+      where: {
+        budget: {
+          user: {
+            email: email
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      include: {
+        budget: {
+          include: {
+            transaction: true
+          }
+        }
+      }
+    });
+
+    // Extraire les budgets uniques (sans répétition)
+    const uniqueBudgets = new Map();
+    
+    recentTransactions.forEach(transaction => {
+      if (transaction.budget && !uniqueBudgets.has(transaction.budget.id)) {
+        uniqueBudgets.set(transaction.budget.id, transaction.budget);
+      }
+    });
+
+    // Convertir en tableau et prendre les 3 premiers
+    const budgets = Array.from(uniqueBudgets.values()).slice(0, 3);
+    
+    console.log("getLastUpdatedBudgets :", budgets);
+    return budgets;
+
+  } catch (error) {
+    console.error('Erreur lors de la récupération des budgets récemment modifiés: ', error);
+    throw error;
+  }
+}
+
 //********************************************************************/
 //                              Users
 //********************************************************************/

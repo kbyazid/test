@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  getLastBudgets,
+  getLastUpdatedBudgets,
   getLastTransactions,
   getReachedBudgets,
   getTotalTransactionAmount,
@@ -55,7 +55,7 @@ export function useDashboardData(email: string | undefined) {
           getReachedBudgets(email),
           getUserBudgetData(email),
           getLastTransactions(email),
-          getLastBudgets(email),
+          getLastUpdatedBudgets(email),
           getDailyExpensesSummary(email)
         ]);
 

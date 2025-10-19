@@ -12,9 +12,12 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
+  YAxis,
 } from "recharts";
 /* import Link from 'next/link'; */
 
@@ -72,7 +75,7 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
     // Mettre à jour les transactions filtrées lorsque la recherche ou la période changent
     useEffect(() => {
         filterTransactions(currentPeriod, searchQuery);
-    }, [searchQuery, currentPeriod, initialTransactions]);
+    }, [searchQuery, currentPeriod, initialTransactions, filterTransactions]);
 
     // Logique pour consolider les dépenses (fonctionne sur les transactions filtrées)
     const consolidatedExpensesSummary = useMemo(() => {
@@ -174,6 +177,72 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
             .sort((a, b) => a.key.localeCompare(b.key))
             .filter(item => item.amount > 0); // Afficher seulement les mois avec des dépenses
     }, [filteredTransactions]);
+
+    // Calcul des dépenses par nature et par mois (6 derniers mois)
+    const expensesByNatureAndMonth = useMemo(() => {
+        const currentDate = new Date();
+        const sixMonthsAgo = new Date(currentDate.getFullYear(), currentDate.getMonth() - 5, 1);
+        
+        // Grouper par nature et mois
+        const data: { [nature: string]: { [month: string]: number } } = {};
+        
+        initialTransactions.forEach((transaction: Transaction) => {
+            if (transaction.type !== "income") {
+                const transactionDate = new Date(transaction.createdAt);
+                
+                // Filtrer les 6 derniers mois
+                if (transactionDate >= sixMonthsAgo) {
+                    const nature = transaction.description.trim().split(' ')[0].substring(0, 8).toLowerCase();
+                    const monthLabel = months[transactionDate.getMonth()]?.label || 'Inconnu';
+                    
+                    if (!data[nature]) {
+                        data[nature] = {};
+                    }
+                    
+                    if (!data[nature][monthLabel]) {
+                        data[nature][monthLabel] = 0;
+                    }
+                    
+                    data[nature][monthLabel] += transaction.amount;
+                }
+            }
+        });
+        
+        // Créer la liste des 6 derniers mois
+        const last6Months = [];
+        for (let i = 5; i >= 0; i--) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+            last6Months.push(months[date.getMonth()]?.label || 'Inconnu');
+        }
+        
+        // Transformer en format pour le graphique
+        return last6Months.map(month => {
+            const monthData: { [key: string]: number | string } = { month };
+            Object.keys(data).forEach(nature => {
+                monthData[nature] = data[nature][month] || 0;
+            });
+            return monthData;
+        }).filter(item => {
+            // Garder seulement les mois qui ont au moins une dépense
+            return Object.keys(item).some(key => key !== 'month' && typeof item[key] === 'number' && item[key] > 0);
+        });
+    }, [initialTransactions]);
+
+    // Extraire les natures uniques pour les couleurs
+    const uniqueNatures = useMemo(() => {
+        const natures = new Set<string>();
+        expensesByNatureAndMonth.forEach(monthData => {
+            Object.keys(monthData).forEach(key => {
+                if (key !== 'month') {
+                    natures.add(key);
+                }
+            });
+        });
+        return Array.from(natures);
+    }, [expensesByNatureAndMonth]);
+
+    // Couleurs pour les différentes natures
+    const natureColors = ['#EF4444', '#10B981', '#F59E0B', '#3B82F6', '#8B5CF6', '#EC4899'];
 
     // Calcul des dépenses par semaine pour le mois sélectionné
     const weeklyExpenses = useMemo(() => {
@@ -290,6 +359,40 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
                         radius={[4, 4, 0, 0]}
                       />
                     </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+            
+            {/* Graphique des dépenses par nature et par mois */}
+            {expensesByNatureAndMonth.length > 0 && uniqueNatures.length > 0 && (
+              <div className="card w-full bg-base-150 card-md shadow-md rounded-xl border-2 border-gray-300 mb-4 mx-2">
+                <div className="card-body">
+                  <h2 className="card-title text-xl font-bold text-center">Dépenses par Nature (6 derniers mois)</h2>
+                  <ResponsiveContainer height={250} width="100%">
+                    <LineChart data={expensesByNatureAndMonth}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="month" 
+                        tick={{ fontSize: 12 }}
+                        interval={0}
+                      />
+                      <YAxis />
+                      <Tooltip 
+                        formatter={(value: number, name: string) => [formatCurrency(value), name]}
+                        labelStyle={{ color: '#333' }}
+                      />
+                      {uniqueNatures.map((nature, index) => (
+                        <Line
+                          key={nature}
+                          type="monotone"
+                          dataKey={nature}
+                          stroke={natureColors[index % natureColors.length]}
+                          strokeWidth={2}
+                          dot={{ fill: natureColors[index % natureColors.length], r: 4 }}
+                        />
+                      ))}
+                    </LineChart>
                   </ResponsiveContainer>
                 </div>
               </div>
