@@ -49,33 +49,28 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
   // Filtrage côté client avec setCurrentPeriod → changement d'état local
   const [filteredTransactions, setFilteredTransactions] = useState(initialTransactions);
 
-    // Fonction de filtrage
-    const filterTransactions = (period: string, query: string) => {
+    // Mettre à jour les transactions filtrées lorsque la recherche ou la période changent
+    useEffect(() => {
         let filtered = initialTransactions;
         // Filtrer par mois
-        if (period !== 'all') {
+        if (currentPeriod !== 'all') {
             filtered = filtered.filter(transaction => {
                 const transactionMonth = new Date(transaction.createdAt).getMonth() + 1;
-                return transactionMonth === parseInt(period);
+                return transactionMonth === parseInt(currentPeriod);
             });
         }
         // Filtrer par recherche
-        if (query) {
+        if (searchQuery) {
             filtered = filtered.filter(transaction =>
-                transaction.description.toLowerCase().includes(query.toLowerCase()) ||
-                (budget.name && budget.name.toLowerCase().includes(query.toLowerCase()))
+                transaction.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (budget.name && budget.name.toLowerCase().includes(searchQuery.toLowerCase()))
             );
         }
         // Trier par date la plus récente
         filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
         setFilteredTransactions(filtered);
-    };
-
-    // Mettre à jour les transactions filtrées lorsque la recherche ou la période changent
-    useEffect(() => {
-        filterTransactions(currentPeriod, searchQuery);
-    }, [searchQuery, currentPeriod, initialTransactions, filterTransactions]);
+    }, [searchQuery, currentPeriod, initialTransactions, budget.name]);
 
     // Logique pour consolider les dépenses (fonctionne sur les transactions filtrées)
     const consolidatedExpensesSummary = useMemo(() => {
@@ -243,6 +238,16 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
 
     // Couleurs pour les différentes natures
     const natureColors = ['#EF4444', '#10B981', '#F59E0B', '#3B82F6', '#8B5CF6', '#EC4899'];
+
+    // Couleur pour le graphique filtré basée sur la recherche
+    const filteredBarColor = useMemo(() => {
+        if (searchQuery) {
+            const searchNature = searchQuery.toLowerCase().substring(0, 5);
+            const natureIndex = uniqueNatures.findIndex(nature => nature === searchNature);
+            return natureIndex !== -1 ? natureColors[natureIndex % natureColors.length] : '#10B981';
+        }
+        return '#10B981';
+    }, [searchQuery, uniqueNatures]);
 
     // Calcul des dépenses par semaine pour le mois sélectionné
     const weeklyExpenses = useMemo(() => {
@@ -427,7 +432,7 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
                       />
                       <Bar
                         dataKey="amount"
-                        fill="#10B981"
+                        fill={filteredBarColor}
                         radius={[4, 4, 0, 0]}
                       />
                     </BarChart>
