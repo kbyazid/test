@@ -24,7 +24,7 @@ export default async function BudgetDetailsPage({ params }: BudgetDetailsPagePro
           {/* Si le budget n'est pas trouvé ou s'il y a une erreur DB, on propose de revenir à l'accueil */}
           <div className="btn btn-accent mt-4">
             <ClientLink href="/" >
-            Retour à l&apos;accueil
+            Retour à l&apos;accueil premier
           </ClientLink>
           </div>
           
