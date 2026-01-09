@@ -26,6 +26,7 @@ import { useUser } from '@clerk/nextjs'
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useExpenseStats } from '@/hooks/useExpenseStats';
 import { useMonthlyAverages } from '@/hooks/useMonthlyAverages';
+import { usePreviousYearAverages } from '@/hooks/usePreviousYearAverages';
 
 interface AxisTickPayload {
   value: string | number;
@@ -46,11 +47,18 @@ const DashboardPage = () => {
   const { data, isLoading, error } = useDashboardData(email);
   const expenseStats = useExpenseStats(data?.dailyExpenses || []);
   const monthlyAverages = useMonthlyAverages(data?.dailyExpenses || []);
+  const previousYearAverages = usePreviousYearAverages(data?.dailyExpenses || []);
   
   // Calcul de la moyenne des moyennes mensuelles (en omettant les zéros)
   const nonZeroAverages = monthlyAverages.filter(item => item.average > 0);
   const overallAverage = nonZeroAverages.length > 0 
     ? nonZeroAverages.reduce((sum, item) => sum + item.average, 0) / nonZeroAverages.length 
+    : 0;
+
+  // Calcul de la moyenne des moyennes mensuelles pour l'année précédente
+  const nonZeroPreviousAverages = previousYearAverages.data.filter(item => item.average > 0);
+  const overallPreviousAverage = nonZeroPreviousAverages.length > 0 
+    ? nonZeroPreviousAverages.reduce((sum, item) => sum + item.average, 0) / nonZeroPreviousAverages.length 
     : 0;
 
   // Couleur adaptative pour le thème
@@ -210,6 +218,38 @@ const DashboardPage = () => {
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
+                {previousYearAverages.hasData && (
+                  <div className="mt-4 border-2 border-base-300 p-5 rounded-xl">
+                    <h3 className="text-lg font-semibold mb-3">
+                      Évolution des Moyennes Mensuelles ({previousYearAverages.year})
+                    </h3>
+                    <ResponsiveContainer height={200} width="100%">
+                      <LineChart data={previousYearAverages.data}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip formatter={(value: number) => [formatCurrency(value), 'Moyenne']} />
+                        <Line 
+                          type="monotone" 
+                          dataKey="average" 
+                          stroke="#3B82F6" 
+                          strokeWidth={2}
+                          dot={{ fill: '#3B82F6' }}
+                        />
+                        <ReferenceLine 
+                          y={overallPreviousAverage} 
+                          stroke="#EF4444" 
+                          strokeWidth={2}
+                          strokeDasharray="5 5"
+                          label={{ 
+                            value: `Moyenne: ${formatCurrency(overallPreviousAverage)}`, 
+                            style: { fill: '#F59E0B', fontWeight: 'bold' }
+                          }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
                 <div className="mt-4 border-2 border-base-300 p-5 rounded-xl">
                   <h3 className="text-lg font-semibold mb-3">
                     Dernieres Depenses

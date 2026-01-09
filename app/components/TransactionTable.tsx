@@ -10,7 +10,9 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis
+  YAxis,
+  Bar,
+  BarChart
 } from "recharts";
 import { FinancialCard } from './FinancialCard';
 
@@ -78,6 +80,24 @@ export default function TransactionTable({ transactions }: TransactionTableProps
       .reduce((sum, t) => sum + t.amount, 0);
       
     return { totalRecettes, totalDepenses };
+  }, [filteredTransactions, startDate, endDate]);
+
+  // Calculer les dépenses par budget pour la période sélectionnée
+  const budgetExpenses = useMemo(() => {
+    if (!startDate && !endDate) return [];
+    
+    const expensesByBudget: { [key: string]: number } = {};
+    
+    filteredTransactions
+      .filter(t => t.type === 'expense' && t.budgetName)
+      .forEach(transaction => {
+        const budgetName = transaction.budgetName!;
+        expensesByBudget[budgetName] = (expensesByBudget[budgetName] || 0) + transaction.amount;
+      });
+    
+    return Object.entries(expensesByBudget)
+      .map(([budgetName, amount]) => ({ budgetName, amount }))
+      .sort((a, b) => b.amount - a.amount);
   }, [filteredTransactions, startDate, endDate]);
 
   return (
@@ -169,6 +189,39 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                     dot={{ fill: '#EF4444', strokeWidth: 2, r: 3 }}
                   />
                 </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Graphique des dépenses par budget */}
+      {showChart && budgetExpenses.length > 0 && (
+        <div className="mb-6">
+          <div className="card bg-base-100 shadow-md rounded-xl border">
+            <div className="card-body">
+              <h2 className="card-title text-lg font-bold text-center">Dépenses par Budget</h2>
+              <ResponsiveContainer height={300} width="100%">
+                <BarChart data={budgetExpenses}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="budgetName" 
+                    tick={{ fontSize: 10 }}
+                    interval={0}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(value) => `${value}€`}
+                  />
+                  <Tooltip 
+                    formatter={(value: number) => [formatCurrency(value), 'Dépensé']}
+                  />
+                  <Bar
+                    dataKey="amount"
+                    fill="#EEAF3A"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
