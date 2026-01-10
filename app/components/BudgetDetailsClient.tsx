@@ -99,14 +99,15 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
         }, 0);
     }, [filteredTransactions]);
 
-    // Calcul des dépenses par mois pour le graphique
+    // Calcul des dépenses par mois pour le graphique (6 derniers mois)
     const monthlyExpenses = useMemo(() => {
         const expensesByMonth: { [key: string]: number } = {};
-        const currentYear = new Date().getFullYear();
+        const currentDate = new Date();
         
-        // Initialiser tous les mois de l'année courante à 0
-        for (let i = 0; i < 12; i++) {
-            const monthKey = `${currentYear}-${String(i + 1).padStart(2, '0')}`;
+        // Initialiser les 6 derniers mois à 0
+        for (let i = 5; i >= 0; i--) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
             expensesByMonth[monthKey] = 0;
         }
         
@@ -132,8 +133,7 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
                     key: key
                 };
             })
-            .sort((a, b) => a.key.localeCompare(b.key))
-            .filter(item => item.amount > 0); // Afficher seulement les mois avec des dépenses
+            .sort((a, b) => a.key.localeCompare(b.key));
     }, [initialTransactions]);
 
     // Calcul des dépenses filtrées par mois pour le nouveau graphique
@@ -355,7 +355,7 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
             {monthlyExpenses.length > 0 && (
               <div className="card w-full bg-base-150 card-md shadow-md rounded-xl border-2 border-gray-300 mb-4 mx-2">
                 <div className="card-body">
-                  <h2 className="card-title text-xl font-bold text-center">Dépenses par mois</h2>
+                  <h2 className="card-title text-xl font-bold text-center">Dépenses par mois (6 derniers mois)</h2>
                   <ResponsiveContainer height={200} width="100%">
                     <BarChart data={monthlyExpenses}>
                       <CartesianGrid vertical={false} strokeDasharray="3 3" />
