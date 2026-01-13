@@ -23,7 +23,13 @@ import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link"; */
 
 // Composant principal TransactionList (Server Component)
-export default async function TransactionList() {
+export default async function TransactionList({ 
+    startDate, 
+    endDate 
+}: { 
+    startDate?: string; 
+    endDate?: string; 
+}) {
     // Récupération de l'utilisateur connecté
   const user = await currentUser();
   const userEmail = user?.primaryEmailAddress?.emailAddress
@@ -117,7 +123,11 @@ console.log(" user Email : ", userEmail)
             </div>
             
             {/* Transactions List Table */}
-            <TransactionTable transactions={transactions} />
+            <TransactionTable 
+                transactions={transactions} 
+                startDate={startDate}
+                endDate={endDate}
+            />
         </>
     );
 }

@@ -18,11 +18,17 @@ import { FinancialCard } from './FinancialCard';
 
 interface TransactionTableProps {
   transactions: Transaction[];
+  startDate?: string;
+  endDate?: string;
 }
 
-export default function TransactionTable({ transactions }: TransactionTableProps) {
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+export default function TransactionTable({ 
+  transactions, 
+  startDate: initialStartDate, 
+  endDate: initialEndDate 
+}: TransactionTableProps) {
+  const [startDate, setStartDate] = useState(initialStartDate || '');
+  const [endDate, setEndDate] = useState(initialEndDate || '');
 
   // Filtrer les transactions selon les dates
   const filteredTransactions = transactions.filter(transaction => {
@@ -99,6 +105,43 @@ export default function TransactionTable({ transactions }: TransactionTableProps
       .map(([budgetName, amount]) => ({ budgetName, amount }))
       .sort((a, b) => b.amount - a.amount);
   }, [filteredTransactions, startDate, endDate]);
+
+  // Calculer les dépenses par nature pour chaque budget
+  const expensesByNatureAndBudget = useMemo(() => {
+    if (!startDate && !endDate) return [];
+    
+    const budgetNatureData: { [budgetName: string]: { [nature: string]: number } } = {};
+    
+    filteredTransactions
+      .filter(t => t.type === 'expense' && t.budgetName)
+      .forEach(transaction => {
+        const budgetName = transaction.budgetName!;
+        const nature = transaction.description.trim().split(' ')[0].substring(0, 5).toLowerCase();
+        
+        if (!budgetNatureData[budgetName]) {
+          budgetNatureData[budgetName] = {};
+        }
+        
+        budgetNatureData[budgetName][nature] = (budgetNatureData[budgetName][nature] || 0) + transaction.amount;
+      });
+    
+    // Transformer en format pour le graphique
+    return Object.entries(budgetNatureData).map(([budgetName, natures]) => {
+      const natureEntries = Object.entries(natures).map(([nature, amount]) => ({
+        nature: nature.charAt(0).toUpperCase() + nature.slice(1),
+        amount
+      })).sort((a, b) => b.amount - a.amount);
+      
+      return {
+        budgetName,
+        natures: natureEntries,
+        totalAmount: Object.values(natures).reduce((sum, amount) => sum + amount, 0)
+      };
+    }).sort((a, b) => b.totalAmount - a.totalAmount);
+  }, [filteredTransactions, startDate, endDate]);
+
+  // Couleurs pour les différentes natures
+  const natureColors = ['#EF4444', '#10B981', '#F59E0B', '#3B82F6', '#8B5CF6', '#EC4899', '#6B7280', '#F97316'];
 
   return (
     <>
@@ -223,6 +266,46 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Graphique des dépenses par nature pour chaque budget */}
+      {showChart && expensesByNatureAndBudget.length > 0 && (
+        <div className="mb-6">
+          <div className="card bg-base-100 shadow-md rounded-xl border">
+            <div className="card-body">
+              <h2 className="card-title text-lg font-bold text-center mb-4">Dépenses par Nature pour chaque Budget</h2>
+              <div className="grid gap-6">
+                {expensesByNatureAndBudget.map((budgetData, budgetIndex) => (
+                  <div key={budgetData.budgetName} className="border rounded-lg p-4">
+                    <h3 className="font-semibold text-center mb-3">{budgetData.budgetName}</h3>
+                    <ResponsiveContainer height={250} width="100%">
+                      <BarChart data={budgetData.natures}>
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="nature" 
+                          tick={{ fontSize: 10 }}
+                          interval={0}
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 10 }}
+                          tickFormatter={(value) => `${value}€`}
+                        />
+                        <Tooltip 
+                          formatter={(value: number) => [formatCurrency(value), 'Dépensé']}
+                        />
+                        <Bar
+                          dataKey="amount"
+                          fill={natureColors[budgetIndex % natureColors.length]}
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

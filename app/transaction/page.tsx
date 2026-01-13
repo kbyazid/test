@@ -5,7 +5,13 @@ import TransactionList from '../components/TransactionList';
 import Wrapper from '../components/Wrapper'
 import { Suspense } from "react"; // Importez Suspense
 
-const TransactionPage = async () => {
+interface TransactionPageProps {
+    searchParams: Promise<{ startDate?: string; endDate?: string }>;
+}
+
+const TransactionPage = async ({ searchParams }: TransactionPageProps) => {
+    const params = await searchParams;
+    
     return (
         <Wrapper >
 
@@ -17,7 +23,10 @@ const TransactionPage = async () => {
                     <span className="ml-4 font-bold text-primary">Chargement des transactions...</span>
                 </div>
             }>
-                <TransactionList /> {/* Le composant qui va chercher les données */}
+                <TransactionList 
+                    startDate={params.startDate}
+                    endDate={params.endDate}
+                /> {/* Le composant qui va chercher les données */}
             </Suspense>
 
         </Wrapper>

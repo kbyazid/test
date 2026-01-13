@@ -303,16 +303,23 @@ const DashboardPage = () => {
                       ))} */}
                           {expenseStats.expensesSlice.map((expense) => (
                             <li key={expense.date} className="flex justify-between items-center py-2">
-                              <span className="font-bold text-accent">
-                                {new Date(expense.date).toLocaleDateString('fr-FR', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                })}
-                              </span>
-                              <span className="text-lg font-bold">
-                                -{formatCurrency(expense.totalAmount)}
-                              </span>
+                              <Link 
+                                href={`/transaction?startDate=${expense.date}&endDate=${expense.date}`}
+                                className="flex-1 hover:bg-base-300 rounded-lg p-2 transition-colors cursor-pointer"
+                              >
+                                <div className="flex justify-between items-center">
+                                  <span className="font-bold text-accent hover:text-accent-focus">
+                                    {new Date(expense.date).toLocaleDateString('fr-FR', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                    })}
+                                  </span>
+                                  <span className="text-lg font-bold">
+                                    -{formatCurrency(expense.totalAmount)}
+                                  </span>
+                                </div>
+                              </Link>
                             </li>
                           ))}
 
