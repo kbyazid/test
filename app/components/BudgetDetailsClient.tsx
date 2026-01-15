@@ -136,14 +136,15 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
             .sort((a, b) => a.key.localeCompare(b.key));
     }, [initialTransactions]);
 
-    // Calcul des dépenses filtrées par mois pour le nouveau graphique
+    // Calcul des dépenses filtrées par mois pour le nouveau graphique (6 derniers mois)
     const filteredMonthlyExpenses = useMemo(() => {
         const expensesByMonth: { [key: string]: number } = {};
-        const currentYear = new Date().getFullYear();
+        const currentDate = new Date();
         
-        // Initialiser tous les mois de l'année courante à 0
-        for (let i = 0; i < 12; i++) {
-            const monthKey = `${currentYear}-${String(i + 1).padStart(2, '0')}`;
+        // Initialiser les 6 derniers mois
+        for (let i = 5; i >= 0; i--) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
             expensesByMonth[monthKey] = 0;
         }
         
@@ -170,7 +171,7 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
                 };
             })
             .sort((a, b) => a.key.localeCompare(b.key))
-            .filter(item => item.amount > 0); // Afficher seulement les mois avec des dépenses
+            .filter(item => item.amount > 0);
     }, [filteredTransactions]);
 
     // Calcul des dépenses par nature et par mois (6 derniers mois)

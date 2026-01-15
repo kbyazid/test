@@ -19,6 +19,7 @@ type Props = {
   desktopExpanded: boolean;
   mobileOpen: boolean;
   onCloseMobile: () => void;
+  onExpandSidebar?: () => void;
 };
 
 const menu = [
@@ -46,48 +47,71 @@ const menu = [
   { key: "users", label: "Mes utilisateurs", icon: Users, href: "/users" },
 ];
 
-const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }) => {
+const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile, onExpandSidebar }) => {
   const [expandedSubmenu, setExpandedSubmenu] = useState<string | null>(null);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   
   // Widths
   const wide = "w-64";
   const narrow = "w-20";
   
-  const toggleSubmenu = (key: string) => {
-    setExpandedSubmenu(expandedSubmenu === key ? null : key);
+  const toggleSubmenu = (key: string, hasSubmenu: boolean, onExpandSidebar?: () => void) => {
+    // Si la sidebar est rétrécie et l'item a un sous-menu, l'élargir d'abord
+    if (!desktopExpanded && hasSubmenu && onExpandSidebar) {
+      onExpandSidebar();
+      // Délai pour permettre l'animation d'élargissement avant d'ouvrir le sous-menu
+      setTimeout(() => {
+        setExpandedSubmenu(key);
+      }, 300);
+    } else {
+      // Comportement normal : toggle du sous-menu
+      setExpandedSubmenu(expandedSubmenu === key ? null : key);
+    }
   };
 
   return (
     <>
       {/* Desktop sidebar: visible on lg+ as fixed column */}
       <aside
-        className={`hidden lg:flex flex-col bg-[#1E293B] text-white py-4 transition-width duration-300 h-full fixed left-0 top-16 ${desktopExpanded ? wide : narrow}`}
-        style={{ height: 'calc(100vh - 4rem)' }} // Prend toute la hauteur sous la navbar
+        className={`hidden lg:flex flex-col bg-[#1E293B] text-white py-4 transition-all duration-300 ease-in-out h-full fixed left-0 top-16 ${desktopExpanded ? wide : narrow}`}
+        style={{ height: 'calc(100vh - 4rem)' }}
       >
         <div className="px-4">
           {/* Logo: show full text only when expanded */}
-          <div className="mb-8 flex items-center gap-3 px-2 pt-2">
-            <div className="bg-white text-[#1E293B] rounded-md w-10 h-10 flex items-center justify-center font-bold text-xl">e</div>
-            {desktopExpanded && <div className="font-bold text-2xl text-[#38BDF8]">.budg</div>}
+          <div className="mb-8 flex items-center gap-3 px-2 pt-2 overflow-hidden">
+            <div className="bg-white text-[#1E293B] rounded-md w-10 h-10 flex items-center justify-center font-bold text-xl flex-shrink-0">e</div>
+            <div className={`font-bold text-2xl text-[#38BDF8] whitespace-nowrap transition-all duration-300 ${desktopExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+              .budg
+            </div>
           </div>
 
           <nav className="flex-1">
             <ul className="space-y-2">
               {menu.map((m) => (
-                <li key={m.key}>
+                <li key={m.key} className="relative">
                   {m.submenu ? (
                     <>
                       <button 
-                        onClick={() => toggleSubmenu(m.key)}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors w-full text-left"
+                        onClick={() => toggleSubmenu(m.key, true, onExpandSidebar)}
+                        onMouseEnter={() => setHoveredItem(m.key)}
+                        onMouseLeave={() => setHoveredItem(null)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-all duration-200 w-full text-left relative"
                       >
-                        <m.icon size={20} />
+                        <m.icon size={20} className="flex-shrink-0" />
+                        <span className={`text-sm flex-1 whitespace-nowrap transition-all duration-300 ${desktopExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+                          {m.label}
+                        </span>
                         {desktopExpanded && (
-                          <>
-                            <span className="text-sm flex-1">{m.label}</span>
+                          <span className="transition-transform duration-200">
                             {expandedSubmenu === m.key ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                          </>
+                          </span>
+                        )}
+                        {!desktopExpanded && hoveredItem === m.key && (
+                          <div className="absolute left-full ml-2 px-3 py-2 bg-[#334155] text-white text-sm rounded-lg shadow-lg whitespace-nowrap z-50">
+                            {m.label}
+                            <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-[#334155] rotate-45"></div>
+                          </div>
                         )}
                       </button>
                       {desktopExpanded && expandedSubmenu === m.key && (
@@ -96,7 +120,7 @@ const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }
                             <li key={sub.key}>
                               <Link 
                                 href={sub.href}
-                                className="flex items-center px-4 py-2 rounded-lg hover:bg-[#334155] transition-colors text-sm"
+                                className="flex items-center px-4 py-2 rounded-lg hover:bg-[#334155] transition-all duration-200 text-sm"
                               >
                                 {sub.label}
                               </Link>
@@ -107,11 +131,21 @@ const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }
                     </>
                   ) : (
                     <Link 
-                      href={m.href} 
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors"
+                      href={m.href}
+                      onMouseEnter={() => setHoveredItem(m.key)}
+                      onMouseLeave={() => setHoveredItem(null)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-all duration-200 relative"
                     >
-                      <m.icon size={20} />
-                      {desktopExpanded && <span className="text-sm">{m.label}</span>}
+                      <m.icon size={20} className="flex-shrink-0" />
+                      <span className={`text-sm whitespace-nowrap transition-all duration-300 ${desktopExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+                        {m.label}
+                      </span>
+                      {!desktopExpanded && hoveredItem === m.key && (
+                        <div className="absolute left-full ml-2 px-3 py-2 bg-[#334155] text-white text-sm rounded-lg shadow-lg whitespace-nowrap z-50">
+                          {m.label}
+                          <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-[#334155] rotate-45"></div>
+                        </div>
+                      )}
                     </Link>
                   )}
                 </li>
@@ -123,18 +157,38 @@ const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }
           <div className="px-4 mt-auto space-y-2">
             <button 
               onClick={() => setCalculatorOpen(true)}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors w-full text-left"
+              onMouseEnter={() => setHoveredItem('calculator')}
+              onMouseLeave={() => setHoveredItem(null)}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-all duration-200 w-full text-left relative"
             >
-              <CalculatorIcon size={20} />
-              {desktopExpanded && <span className="text-sm">Calculatrice</span>}
+              <CalculatorIcon size={20} className="flex-shrink-0" />
+              <span className={`text-sm whitespace-nowrap transition-all duration-300 ${desktopExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+                Calculatrice
+              </span>
+              {!desktopExpanded && hoveredItem === 'calculator' && (
+                <div className="absolute left-full ml-2 px-3 py-2 bg-[#334155] text-white text-sm rounded-lg shadow-lg whitespace-nowrap z-50">
+                  Calculatrice
+                  <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-[#334155] rotate-45"></div>
+                </div>
+              )}
             </button>
             
             <Link 
-              href="/sign-in" 
-              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-600 transition-colors text-red-300 hover:text-white"
+              href="/sign-in"
+              onMouseEnter={() => setHoveredItem('logout')}
+              onMouseLeave={() => setHoveredItem(null)}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-600 transition-all duration-200 text-red-300 hover:text-white relative"
             >
-              <LogOut size={20} />
-              {desktopExpanded && <span className="text-sm">Déconnexion</span>}
+              <LogOut size={20} className="flex-shrink-0" />
+              <span className={`text-sm whitespace-nowrap transition-all duration-300 ${desktopExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+                Déconnexion
+              </span>
+              {!desktopExpanded && hoveredItem === 'logout' && (
+                <div className="absolute left-full ml-2 px-3 py-2 bg-red-600 text-white text-sm rounded-lg shadow-lg whitespace-nowrap z-50">
+                  Déconnexion
+                  <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-red-600 rotate-45"></div>
+                </div>
+              )}
             </Link>
           </div>
         </div>
@@ -174,7 +228,7 @@ const Sidebar: React.FC<Props> = ({ desktopExpanded, mobileOpen, onCloseMobile }
                   {m.submenu ? (
                     <>
                       <button 
-                        onClick={() => toggleSubmenu(m.key)}
+                        onClick={() => toggleSubmenu(m.key, false)}
                         className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#334155] transition-colors w-full text-left"
                       >
                         <m.icon size={20} />

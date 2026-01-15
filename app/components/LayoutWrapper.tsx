@@ -34,6 +34,7 @@ const LayoutWrapper = ({ children }: LayoutWrapperProps) => {
           desktopExpanded={desktopExpanded}
           mobileOpen={mobileOpen}
           onCloseMobile={() => setMobileOpen(false)}
+          onExpandSidebar={() => setDesktopExpanded(true)}
         />
 
         {/* Main content */}
