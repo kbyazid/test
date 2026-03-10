@@ -45,6 +45,7 @@ interface BudgetDetailsClientProps {
 export default function BudgetDetailsClient({ budget, initialTransactions }: BudgetDetailsClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPeriod, setCurrentPeriod] = useState("all");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   // Filtrage côté client avec setCurrentPeriod → changement d'état local
   const [filteredTransactions, setFilteredTransactions] = useState(initialTransactions);
@@ -52,11 +53,19 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
     // Mettre à jour les transactions filtrées lorsque la recherche ou la période changent
     useEffect(() => {
         let filtered = initialTransactions;
-        // Filtrer par mois
+        // Filtrer par mois et année
         if (currentPeriod !== 'all') {
             filtered = filtered.filter(transaction => {
-                const transactionMonth = new Date(transaction.createdAt).getMonth() + 1;
-                return transactionMonth === parseInt(currentPeriod);
+                const transactionDate = new Date(transaction.createdAt);
+                const transactionMonth = transactionDate.getMonth() + 1;
+                const transactionYear = transactionDate.getFullYear();
+                return transactionMonth === parseInt(currentPeriod) && transactionYear === selectedYear;
+            });
+        } else {
+            // Si "all" est sélectionné, filtrer uniquement par année
+            filtered = filtered.filter(transaction => {
+                const transactionYear = new Date(transaction.createdAt).getFullYear();
+                return transactionYear === selectedYear;
             });
         }
         // Filtrer par recherche
@@ -70,7 +79,7 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
         filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
         setFilteredTransactions(filtered);
-    }, [searchQuery, currentPeriod, initialTransactions, budget.name]);
+    }, [searchQuery, currentPeriod, selectedYear, initialTransactions, budget.name]);
 
     // Logique pour consolider les dépenses (fonctionne sur les transactions filtrées)
     const consolidatedExpensesSummary = useMemo(() => {
@@ -475,7 +484,31 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
             {/* Version search */}
               <div className="card w-full bg-base-150 card-md shadow-md rounded-xl border-2 border-gray-300 mb-4 mx-2">
                 <div className="card-body">
-                  <h2 className="card-title text-xl font-bold">Recherche & Filtre</h2>
+                  {/* Titre et boutons de sélection d'exercice sur la même ligne */}
+                  <div className="flex justify-between items-center mb-1">
+                    <h2 className="card-title text-xl font-bold">Recherche & Filtre</h2>
+                    <div className="flex gap-1">
+                      <button
+                        className={`btn btn-xs ${selectedYear === new Date().getFullYear() - 2 ? 'btn-info' : 'btn-outline'}`}
+                        onClick={() => setSelectedYear(new Date().getFullYear() - 2)}
+                      >
+                        {new Date().getFullYear() - 2}
+                      </button>
+                      <button
+                        className={`btn btn-xs ${selectedYear === new Date().getFullYear() - 1 ? 'btn-info' : 'btn-outline'}`}
+                        onClick={() => setSelectedYear(new Date().getFullYear() - 1)}
+                      >
+                        {new Date().getFullYear() - 1}
+                      </button>
+                      <button
+                        className={`btn btn-xs ${selectedYear === new Date().getFullYear() ? 'btn-info' : 'btn-outline'}`}
+                        onClick={() => setSelectedYear(new Date().getFullYear())}
+                      >
+                        {new Date().getFullYear()}
+                      </button>
+                    </div>
+                  </div>
+                  
                   <div className="flex flex-col md:flex-row gap-4 items-center mb-4">
                     <div className="input relative w-full md:flex-1">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
