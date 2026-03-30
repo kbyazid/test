@@ -45,7 +45,7 @@ interface BudgetDetailsClientProps {
 export default function BudgetDetailsClient({ budget, initialTransactions }: BudgetDetailsClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPeriod, setCurrentPeriod] = useState("all");
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState<number | null>(new Date().getFullYear());
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   // Filtrage côté client avec setCurrentPeriod → changement d'état local
   const [filteredTransactions, setFilteredTransactions] = useState(initialTransactions);
@@ -59,14 +59,19 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
                 const transactionDate = new Date(transaction.createdAt);
                 const transactionMonth = transactionDate.getMonth() + 1;
                 const transactionYear = transactionDate.getFullYear();
+                if (selectedYear === null) {
+                    return transactionMonth === parseInt(currentPeriod);
+                }
                 return transactionMonth === parseInt(currentPeriod) && transactionYear === selectedYear;
             });
         } else {
-            // Si "all" est sélectionné, filtrer uniquement par année
-            filtered = filtered.filter(transaction => {
-                const transactionYear = new Date(transaction.createdAt).getFullYear();
-                return transactionYear === selectedYear;
-            });
+            // Si "all" est sélectionné, filtrer uniquement par année (ou pas si selectedYear est null)
+            if (selectedYear !== null) {
+                filtered = filtered.filter(transaction => {
+                    const transactionYear = new Date(transaction.createdAt).getFullYear();
+                    return transactionYear === selectedYear;
+                });
+            }
         }
         // Filtrer par recherche
         if (searchQuery) {
@@ -488,6 +493,12 @@ export default function BudgetDetailsClient({ budget, initialTransactions }: Bud
                   <div className="flex justify-between items-center mb-1">
                     <h2 className="card-title text-xl font-bold">Recherche & Filtre</h2>
                     <div className="flex gap-1">
+                      <button
+                        className={`btn btn-xs ${selectedYear === null ? 'btn-info' : 'btn-outline'}`}
+                        onClick={() => setSelectedYear(null)}
+                      >
+                        Tous
+                      </button>
                       <button
                         className={`btn btn-xs ${selectedYear === new Date().getFullYear() - 2 ? 'btn-info' : 'btn-outline'}`}
                         onClick={() => setSelectedYear(new Date().getFullYear() - 2)}
